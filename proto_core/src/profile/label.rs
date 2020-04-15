@@ -1,5 +1,4 @@
 use crate::profile::buffer::Buffer;
-use crate::profile::buffer::WireTypes::WireVarint;
 use crate::profile::Decoder;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]

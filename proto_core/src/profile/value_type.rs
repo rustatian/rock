@@ -23,7 +23,7 @@ impl Decoder<ValueType> for ValueType {
         let mut vt = ValueType::default();
         loop {
             if !data.is_empty() {
-                match  Buffer::decode_field(buf, data) {
+                match Buffer::decode_field(buf, data) {
                     Ok(()) => {
                         match buf.field {
                             //1

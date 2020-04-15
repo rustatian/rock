@@ -44,7 +44,7 @@ impl Decoder<Sample> for Sample {
                         1 => {
                             let mut d = buf.data.clone();
                             match buf.r#type {
-                                WireTypes::WireBytes =>
+                                WireTypes::WireBytes => {
                                     while !d.is_empty() {
                                         match Buffer::decode_varint(&mut d) {
                                             Ok(varint) => s.location_index.push(varint as u64),
@@ -53,6 +53,7 @@ impl Decoder<Sample> for Sample {
                                             }
                                         }
                                     }
+                                }
 
                                 _ => {
                                     if buf.r#type != WireTypes::WireVarint {
@@ -67,7 +68,7 @@ impl Decoder<Sample> for Sample {
                         2 => {
                             let mut d = buf.data.clone();
                             match buf.r#type {
-                                WireTypes::WireBytes =>
+                                WireTypes::WireBytes => {
                                     while !d.is_empty() {
                                         match Buffer::decode_varint(&mut d) {
                                             Ok(varint) => s.value.push(varint as i64),
@@ -75,7 +76,8 @@ impl Decoder<Sample> for Sample {
                                                 panic!(err);
                                             }
                                         }
-                                    },
+                                    }
+                                }
                                 _ => {
                                     if buf.r#type != WireTypes::WireVarint {
                                         panic!("value is not varint type");
@@ -87,7 +89,8 @@ impl Decoder<Sample> for Sample {
                         }
                         //3
                         3 => {
-                            s.label_index.push(label::Label::decode(buf, &mut buf.data.clone()));
+                            s.label_index
+                                .push(label::Label::decode(buf, &mut buf.data.clone()));
                         }
                         _ => {
                             panic!("Unknown sample type");

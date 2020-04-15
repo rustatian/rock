@@ -1,6 +1,6 @@
 use clap::{App, AppSettings, Arg, SubCommand};
-use proto_core::*;
 use proto_core::profile::buffer::ProfileDecoder;
+use proto_core::*;
 
 fn main() {
     let cli = App::new(env!("CARGO_PKG_NAME"))

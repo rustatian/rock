@@ -108,7 +108,6 @@ impl Buffer {
             panic!("WireTypes not Equal WireBytes");
         }
 
-
         while !data.is_empty() {
             // here we decode data, the algorithm is following:
             // 1. We pass whole data and buffer to the decode_field function
@@ -234,9 +233,9 @@ impl Buffer {
             // 0011101100000000
             // 0011101101010110 = 15190
             u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-            // here we check all 8 bits for MSB
-            // if all bits are zero, we'are done
-            // if not, MSB is set and there is presents next byte to read
+                                                                          // here we check all 8 bits for MSB
+                                                                          // if all bits are zero, we'are done
+                                                                          // if not, MSB is set and there is presents next byte to read
             if buf[i] & 0x80 == 0 {
                 // drain first i-th number of elements
                 buf.drain(..=i);
