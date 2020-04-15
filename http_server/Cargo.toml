@@ -1,0 +1,34 @@
+[package]
+name = "http_server"
+version = "0.1.0"
+authors = ["Valery Piashchynski <piashchynski_valery@hotmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3.0.0-alpha.1"
+actix-rt = "1.1.0"
+
+
+[profile.dev]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 16
+rpath = false
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+debug = false
+debug-assertions = false
+overflow-checks = false
+panic = 'unwind'
+incremental = false
+rpath = false
+codegen-units = 1

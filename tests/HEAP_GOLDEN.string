@@ -1,0 +1,212 @@
+PeriodType: space bytes
+Period: 524288
+Time UTC: 2020-01-23 18:37:55
+Samples:
+alloc_objects/count alloc_space/bytes inuse_objects/count inuse_space/bytes
+          2     666237          0          0: 1 2 3 4 5 6 7
+                bytes:[262144]
+        910     524576          0          0: 8
+                bytes:[576]
+       4097    1048832          0          0: 8
+                bytes:[256]
+       2049    1049088          0          0: 8
+                bytes:[512]
+          2    1848496          0          0: 9 3 4 5 6 7
+                bytes:[663552]
+       2521     524392          0          0: 10 6 7
+                bytes:[208]
+          1    1212696          0          0: 11 12 13 14 15 16
+                bytes:[1048576]
+        468   30675616          0          0: 17 18 19 20 21 22
+                bytes:[65536]
+       1864    2624961          0          0: 8
+                bytes:[1408]
+        341     525056          0          0: 23 24 25 26 27
+                bytes:[1536]
+       1170     524512          0          0: 8
+                bytes:[448]
+       1366    1049344          0          0: 8
+                bytes:[768]
+       1643    5258896          0          0: 8
+                bytes:[3200]
+       2235    1573920          0          0: 8
+                bytes:[704]
+       2048     524416          0          0: 28 29 30 31 32 33 34 35 36 37 13 14 15 16
+                bytes:[256]
+         64     528394          0          0: 38 39 40 41 42 43 31 32 33 34 35 36 37 13 14 15 16
+                bytes:[8192]
+        341     525056          0          0: 23 24 25 26 44 45
+                bytes:[1536]
+       2734    4200450          0          0: 8
+                bytes:[1536]
+       5245   12085139          0          0: 8
+                bytes:[2304]
+       2562    2624000          0          0: 8
+                bytes:[1024]
+       6154   11028874          0          0: 8
+                bytes:[1792]
+          8     557738          0          0: 46 47 2 3 48 49 33 34 35 36 37 13 14 15 16
+                bytes:[65536]
+       2460    3149569          0          0: 8
+                bytes:[1280]
+       5990   18403892          0          0: 8
+                bytes:[3072]
+       2891    9994340          0          0: 8
+                bytes:[3456]
+       2342    2098944          0          0: 8
+                bytes:[896]
+       1025    1575169          0          0: 23 24 25 50 19 20 21 22
+                bytes:[1536]
+          5    3696992          0          0: 9 3 48 49 33 34 35 36 37 13 14 15 16
+                bytes:[663552]
+        128     526338          0          0: 51 52 53 54
+                bytes:[4096]
+       4514   43920864          0          0: 8
+                bytes:[9728]
+       5084   13666461          0          0: 8
+                bytes:[2688]
+       2443   16888050          0          0: 8
+                bytes:[6912]
+       9410   50590136          0          0: 8
+                bytes:[5376]
+       9689  105419616          0          0: 8
+                bytes:[10880]
+       4433   30078176          0          0: 8
+                bytes:[6784]
+       3847    7879689          0          0: 8
+                bytes:[2048]
+        910   14910634          0          0: 55 56 57 58 59 22
+                bytes:[16384]
+      11822   48423157          0          0: 8
+                bytes:[4096]
+       6141   40094466          0          0: 8
+                bytes:[6528]
+      13647   83851193          0          0: 8
+                bytes:[6144]
+        697   45734556          0          0: 60 61 62 18 19 20 21 22
+                bytes:[65536]
+       2731     524384          0          0: 8
+                bytes:[192]
+       1822    2099456          0          0: 8
+                bytes:[1152]
+      24902  510003310          0          0: 8
+                bytes:[20480]
+      36045  590567636          0          0: 8
+                bytes:[16384]
+      12790  183363589          0          0: 8
+                bytes:[14336]
+      13644   66367193          0          0: 8
+                bytes:[4864]
+      69074 2263426513          0          0: 8
+                bytes:[32768]
+      23581  676137098          0          0: 8
+                bytes:[28672]
+      44145 1203591326          0          0: 8
+                bytes:[27264]
+      46207 1135597944          0          0: 8
+                bytes:[24576]
+      20834  453351039          0          0: 8
+                bytes:[21760]
+      10833  206612261          0          0: 8
+                bytes:[19072]
+      34244  631199112          0          0: 8
+                bytes:[18432]
+      21176  287325781          0          0: 8
+                bytes:[13568]
+      23483  288568063          0          0: 8
+                bytes:[12288]
+       8220   84178521          0          0: 8
+                bytes:[10240]
+      23026  188636895          0          0: 8
+                bytes:[8192]
+      93657 6137912070       1029   67486357: 8
+                bytes:[65536]
+     135976 7797462340          0          0: 8
+                bytes:[57344]
+     137311 6749158732          0          0: 8
+                bytes:[49152]
+     134768 5520110829          0          0: 8
+                bytes:[40960]
+      21112  199976462          0          0: 8
+                bytes:[9472]
+          8     557738          0          0: 63 64 65 66 67 68 69 70 71 72 73 74 75 76
+                bytes:[65536]
+Locations
+     1: 0x7d2b86 M=1 compress/flate.(*compressor).init /usr/lib/go/src/compress/flate/deflate.go:593 s=0
+     2: 0x7d3359 M=1 compress/flate.NewWriter /usr/lib/go/src/compress/flate/deflate.go:668 s=0
+     3: 0x7e4eb6 M=1 compress/gzip.(*Writer).Write /usr/lib/go/src/compress/gzip/gzip.go:191 s=0
+     4: 0x9dc2f4 M=1 runtime/pprof.(*profileBuilder).flush /usr/lib/go/src/runtime/pprof/proto.go:147 s=0
+     5: 0x9dd925 M=1 runtime/pprof.(*profileBuilder).locForPC /usr/lib/go/src/runtime/pprof/proto.go:292 s=0
+     6: 0x9def85 M=1 runtime/pprof.(*profileBuilder).build /usr/lib/go/src/runtime/pprof/proto.go:416 s=0
+     7: 0x9da7a4 M=1 runtime/pprof.profileWriter /usr/lib/go/src/runtime/pprof/pprof.go:793 s=0
+     8: 0x9e83c6 M=1 main.main.func2 /home/valery/Projects/repo/GoPlayground/grpc/streaming/client/client.go:65 s=0
+     9: 0x7d3304 M=1 compress/flate.NewWriter /usr/lib/go/src/compress/flate/deflate.go:667 s=0
+    10: 0x9dcbc3 M=1 runtime/pprof.(*profileBuilder).locForPC /usr/lib/go/src/runtime/pprof/proto.go:223 s=0
+    11: 0x9da4a8 M=1 runtime/pprof.StartCPUProfile /usr/lib/go/src/runtime/pprof/pprof.go:763 s=0
+    12: 0x9e4fcc M=1 net/http/pprof.Profile /usr/lib/go/src/net/http/pprof/pprof.go:132 s=0
+    13: 0x8746c3 M=1 net/http.HandlerFunc.ServeHTTP /usr/lib/go/src/net/http/server.go:2007 s=0
+    14: 0x877345 M=1 net/http.(*ServeMux).ServeHTTP /usr/lib/go/src/net/http/server.go:2387 s=0
+    15: 0x878ece M=1 net/http.serverHandler.ServeHTTP /usr/lib/go/src/net/http/server.go:2802 s=0
+    16: 0x873665 M=1 net/http.(*conn).serve /usr/lib/go/src/net/http/server.go:1890 s=0
+    17: 0x8fe3a8 M=1 google.golang.org/grpc/encoding/proto.marshal /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/encoding/proto/proto.go:55 s=0
+    18: 0x8fe80d M=1 google.golang.org/grpc/encoding/proto.codec.Marshal /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/encoding/proto/proto.go:74 s=0
+    19: 0x9b899b M=1 google.golang.org/grpc.encode /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/rpc_util.go:543 s=0
+    20: 0x9c938c M=1 google.golang.org/grpc.prepareMsg /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:1519 s=0
+    21: 0x9c3c28 M=1 google.golang.org/grpc.(*clientStream).SendMsg /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:699 s=0
+    22: 0x9e84a3 M=1 main.main.func2 /home/valery/Projects/repo/GoPlayground/grpc/streaming/client/client.go:68 s=0
+    23: 0x47c21d M=1 sync.(*Pool).pinSlow /usr/lib/go/src/sync/pool.go:227 s=0
+    24: 0x47c05a M=1 sync.(*Pool).pin /usr/lib/go/src/sync/pool.go:206 s=0
+    25: 0x47ba67 M=1 sync.(*Pool).Get /usr/lib/go/src/sync/pool.go:128 s=0
+    26: 0x86a884 M=1 net/http.newBufioWriterSize /usr/lib/go/src/net/http/server.go:841 s=0
+    27: 0x872be4 M=1 net/http.(*conn).serve /usr/lib/go/src/net/http/server.go:1814 s=0
+    28: 0x9d21a9 M=1 runtime/pprof.elfBuildID /usr/lib/go/src/runtime/pprof/elf.go:22 s=0
+    29: 0x9dfd2a M=1 runtime/pprof.parseProcSelfMaps /usr/lib/go/src/runtime/pprof/proto.go:552 s=0
+    30: 0x9df4ff M=1 runtime/pprof.(*profileBuilder).readMapping /usr/lib/go/src/runtime/pprof/proto.go:443 s=0
+    31: 0x9de1b2 M=1 runtime/pprof.newProfileBuilder /usr/lib/go/src/runtime/pprof/proto.go:311 s=0
+    32: 0x9e1d1a M=1 runtime/pprof.writeHeapProto /usr/lib/go/src/runtime/pprof/protomem.go:16 s=0
+    33: 0x9d77fa M=1 runtime/pprof.writeHeapInternal /usr/lib/go/src/runtime/pprof/pprof.go:573 s=0
+    34: 0x9d74fe M=1 runtime/pprof.writeHeap /usr/lib/go/src/runtime/pprof/pprof.go:533 s=0
+    35: 0x9d4f2f M=1 runtime/pprof.(*Profile).WriteTo /usr/lib/go/src/runtime/pprof/pprof.go:329 s=0
+    36: 0x9e61ef M=1 net/http/pprof.handler.ServeHTTP /usr/lib/go/src/net/http/pprof/pprof.go:245 s=0
+    37: 0x9e653f M=1 net/http/pprof.Index /usr/lib/go/src/net/http/pprof/pprof.go:268 s=0
+    38: 0x533a69 M=1 bytes.makeSlice /usr/lib/go/src/bytes/buffer.go:229 s=0
+    39: 0x53300a M=1 bytes.(*Buffer).grow /usr/lib/go/src/bytes/buffer.go:142 s=0
+    40: 0x533741 M=1 bytes.(*Buffer).ReadFrom /usr/lib/go/src/bytes/buffer.go:202 s=0
+    41: 0x6511c5 M=1 io/ioutil.readAll /usr/lib/go/src/io/ioutil/ioutil.go:36 s=0
+    42: 0x651664 M=1 io/ioutil.ReadFile /usr/lib/go/src/io/ioutil/ioutil.go:73 s=0
+    43: 0x9df46e M=1 runtime/pprof.(*profileBuilder).readMapping /usr/lib/go/src/runtime/pprof/proto.go:442 s=0
+    44: 0x86c780 M=1 net/http.(*conn).readRequest /usr/lib/go/src/net/http/server.go:1035 s=0
+    45: 0x872c59 M=1 net/http.(*conn).serve /usr/lib/go/src/net/http/server.go:1817 s=0
+    46: 0x7d3beb M=1 compress/flate.newDeflateFast /usr/lib/go/src/compress/flate/deflatefast.go:55 s=0
+    47: 0x7d2b39 M=1 compress/flate.(*compressor).init /usr/lib/go/src/compress/flate/deflate.go:592 s=0
+    48: 0x9df3a8 M=1 runtime/pprof.(*profileBuilder).build /usr/lib/go/src/runtime/pprof/proto.go:434 s=0
+    49: 0x9e257e M=1 runtime/pprof.writeHeapProto /usr/lib/go/src/runtime/pprof/protomem.go:68 s=0
+    50: 0x8fe793 M=1 google.golang.org/grpc/encoding/proto.codec.Marshal /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/encoding/proto/proto.go:73 s=0
+    51: 0x55d19e M=1 bufio.NewReaderSize /usr/lib/go/src/bufio/bufio.go:56 s=0
+    52: 0x55d286 M=1 bufio.NewReader /usr/lib/go/src/bufio/bufio.go:62 s=0
+    53: 0x86a780 M=1 net/http.newBufioReader /usr/lib/go/src/net/http/server.go:830 s=0
+    54: 0x872b7b M=1 net/http.(*conn).serve /usr/lib/go/src/net/http/server.go:1813 s=0
+    55: 0x8e61cb M=1 google.golang.org/grpc/internal/transport.(*http2Client).Write /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/internal/transport/http2_client.go:857 s=0
+    56: 0x9c51e1 M=1 google.golang.org/grpc.(*csAttempt).sendMsg /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:845 s=0
+    57: 0x9cca1d M=1 google.golang.org/grpc.(*clientStream).SendMsg.func2 /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:710 s=0
+    58: 0x9c2f18 M=1 google.golang.org/grpc.(*clientStream).withRetry /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:590 s=0
+    59: 0x9c41b3 M=1 google.golang.org/grpc.(*clientStream).SendMsg /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/stream.go:716 s=0
+    60: 0x59d8fa M=1 github.com/golang/protobuf/proto.(*Buffer).grow /home/valery/Projects/go/pkg/mod/github.com/golang/protobuf@v1.3.2/proto/table_marshal.go:2775 s=0
+    61: 0x59d0f0 M=1 github.com/golang/protobuf/proto.(*Buffer).Marshal /home/valery/Projects/go/pkg/mod/github.com/golang/protobuf@v1.3.2/proto/table_marshal.go:2741 s=0
+    62: 0x8fe464 M=1 google.golang.org/grpc/encoding/proto.marshal /home/valery/Projects/go/pkg/mod/google.golang.org/grpc@v1.26.0/encoding/proto/proto.go:59 s=0
+    63: 0x62657e M=1 net.open /usr/lib/go/src/net/parse.go:72 s=0
+    64: 0x62abea M=1 net.maxListenerBacklog /usr/lib/go/src/net/sock_linux.go:10 s=0
+    65: 0x643011 M=1 net.listenerBacklog.func1 /usr/lib/go/src/net/net.go:374 s=0
+    66: 0x47b8bf M=1 sync.(*Once).doSlow /usr/lib/go/src/sync/once.go:66 s=0
+    67: 0x47b797 M=1 sync.(*Once).Do /usr/lib/go/src/sync/once.go:57 s=0
+    68: 0x623a11 M=1 net.listenerBacklog /usr/lib/go/src/net/net.go:374 s=0
+    69: 0x62b13f M=1 net.socket /usr/lib/go/src/net/sock_posix.go:57 s=0
+    70: 0x618a9e M=1 net.internetSocket /usr/lib/go/src/net/ipsock_posix.go:141 s=0
+    71: 0x631cc0 M=1 net.(*sysListener).listenTCP /usr/lib/go/src/net/tcpsock_posix.go:168 s=0
+    72: 0x5f4a60 M=1 net.(*ListenConfig).Listen /usr/lib/go/src/net/dial.go:634 s=0
+    73: 0x5f5a76 M=1 net.Listen /usr/lib/go/src/net/dial.go:704 s=0
+    74: 0x879075 M=1 net/http.(*Server).ListenAndServe /usr/lib/go/src/net/http/server.go:2821 s=0
+    75: 0x87a919 M=1 net/http.ListenAndServe /usr/lib/go/src/net/http/server.go:3081 s=0
+    76: 0x9e81bf M=1 main.main.func1 /home/valery/Projects/repo/GoPlayground/grpc/streaming/client/client.go:39 s=0
+Mappings
+1: 0x400000/0x9e9000/0x0 /home/valery/Projects/repo/GoPlayground/grpc/streaming/client/client  [FN]

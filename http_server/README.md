@@ -1,0 +1,1 @@
+http server grabs the data from golang and put it to the channel.
