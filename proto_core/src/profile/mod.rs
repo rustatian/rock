@@ -511,6 +511,8 @@ impl Profile {
                 }
             }
 
+            // according to https://github.com/google/pprof/pull/517
+            // check_valid function
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
