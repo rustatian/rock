@@ -290,17 +290,17 @@ mod profile_test {
         // value - path to related golden file
         let mut test_data = HashMap::<String, String>::new();
         test_data.insert(
-            String::from("../tests/HEAP.pb.gz"),
-            String::from("../tests/HEAP_GOLDEN.string"),
+            String::from("tests/HEAP.pb.gz"),
+            String::from("tests/HEAP_GOLDEN.string"),
         );
         test_data.insert(
-            String::from("../tests/CPU.pb.gz"),
-            String::from("../tests/CPU_GOLDEN.string"),
+            String::from("tests/CPU.pb.gz"),
+            String::from("tests/CPU_GOLDEN.string"),
         );
 
         test_data.insert(
-            String::from("../tests/encoded"),
-            String::from("../tests/encoded.string"),
+            String::from("tests/encoded"),
+            String::from("tests/encoded.string"),
         );
 
         for (k, v) in test_data.iter() {

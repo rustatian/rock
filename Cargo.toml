@@ -1,5 +1,5 @@
 [package]
-name = "http_server"
+name = "rock"
 version = "0.1.0"
 authors = ["Valery Piashchynski <piashchynski_valery@hotmail.com>"]
 edition = "2018"
@@ -9,7 +9,15 @@ edition = "2018"
 [dependencies]
 actix-web = "3.0.0-alpha.1"
 actix-rt = "1.1.0"
-
+chrono = "0.4.11"
+chan = "0.1.23"
+clap = "2.33.0"
+flate2 = "1.0.14"
+futures = "0.3.4"
+crossbeam = "0.7.3"
+async-task = "1.3.1"
+once_cell = "1.3.1"
+num_cpus = "1.12.0"
 
 [profile.dev]
 opt-level = 0
