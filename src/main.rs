@@ -1,6 +1,9 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 use profile::buffer::ProfileDecoder;
+mod binutils;
+mod driver;
 mod errors;
+mod graph;
 mod http_server;
 mod profile;
 
