@@ -33,7 +33,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path ./proto_core/Cargo.toml --all -- --check
+          args: --manifest-path Cargo.toml --all -- --check
 
   clippy_check:
     name: Clippy check
@@ -44,7 +44,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path ./proto_core/Cargo.toml --all-targets --all-features -- -D warnings
+          args: --manifest-path Cargo.toml --all-targets --all-features -- -D warnings
 
   build:
     name: ${{ matrix.name }}
@@ -81,22 +81,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --manifest-path ./proto_core/Cargo.toml
+          args: --manifest-path Cargo.toml
 
-      - name: Build launcher
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path ./launcher/Cargo.toml
-
-      - name: Build http server
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --manifest-path ./http_server/Cargo.toml
 
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path ./proto_core/Cargo.toml
+          args: --manifest-path Cargo.toml

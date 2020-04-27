@@ -1,16 +1,24 @@
+use crate::binutils::binrep::Binrep;
 use crate::errors::RockError;
+
+mod binrep;
 
 // An ObjTool inspects shared libraries and executable files.
 trait ObjTool {
     // Open opens the named object file. If the object is a shared
     // library, start/limit/offset are the addresses where it is mapped
     // into memory in the address space being inspected.
-    fn open<F>(file: String, start: u64, limit: u64, offset: u64) -> Result<F, RockError>
-    where
-        F: ObjFile;
+    fn open(
+        &mut self,
+        file: String,
+        start: u64,
+        limit: u64,
+        offset: u64,
+    ) -> Result<Binrep, RockError>;
     // Disasm disassembles the named object file, starting at
     // the start address and stopping at (before) the end address.
     fn disasm(
+        &mut self,
         file: String,
         start: u64,
         end: u64,
@@ -41,7 +49,7 @@ trait ObjFile {
     fn symbols();
 
     // Close closes the file, releasing associated resources.
-    fn close() -> Result<_, RockError>;
+    fn close() -> Result<(), RockError>;
 }
 
 struct Inst {
