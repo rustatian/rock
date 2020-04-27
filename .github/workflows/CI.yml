@@ -77,7 +77,7 @@ jobs:
           profile: default
           override: true
 
-      - name: Build proto_core
+      - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
