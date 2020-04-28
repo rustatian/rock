@@ -23,7 +23,7 @@ impl Report {
         }
     }
 
-    fn aa(self) {
-        let ab = (self.format_value)(1, self.options);
-    }
+    // fn aa(self) {
+    //     let ab = (self.format_value)(1, self.options);
+    // }
 }

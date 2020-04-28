@@ -83,6 +83,8 @@ pub struct Profile {
     default_sample_type_index: i64, // Index into string table.
 }
 
+type NumLabelUnitsWithIgnored = (HashMap<String, String>, HashMap<String, Vec<String>>);
+
 /// Text representation of a profile. For debugging and testing purposes.
 impl ToString for Profile {
     #[inline]
@@ -529,5 +531,84 @@ impl Profile {
         }
 
         Ok(())
+    }
+
+    // NumLabelUnits returns a map of numeric label keys to the units
+    // associated with those keys and a map of those keys to any units
+    // that were encountered but not used.
+    // Unit for a given key is the first encountered unit for that key. If multiple
+    // units are encountered for values paired with a particular key, then the first
+    // unit encountered is used and all other units are returned in sorted order
+    // in map of ignored units.
+    // If no units are encountered for a particular key, the unit is then inferred
+    // based on the key.
+    pub fn num_label_units(&self) -> Result<NumLabelUnitsWithIgnored, RockError> {
+        let mut num_label_units: HashMap<String, String> = HashMap::new();
+        let mut ignored_units: HashMap<String, HashMap<String, bool>> = HashMap::new();
+        let mut encountered_keys: HashMap<String, bool> = HashMap::new();
+
+        // Determine units based on numeric tags for each sample.
+        for (_, s) in self.sample.iter().enumerate() {
+            for (k, _) in s.num_label.iter() {
+                encountered_keys.insert(String::from(k), true);
+
+                if let Some(unit_vec) = s.num_unit_label.get(k) {
+                    for unit in unit_vec {
+                        if unit.is_empty() {
+                            continue;
+                        }
+
+                        if let Some(want_unit) = num_label_units.get(k) {
+                            if want_unit != unit {
+                                ignored_units
+                                    .entry(String::from(k))
+                                    .and_modify(|f| {
+                                        f.insert(String::from(unit), true);
+                                    })
+                                    .or_insert_with(HashMap::new);
+                            }
+                        } else {
+                            num_label_units.insert(String::from(k), String::from(unit));
+                        }
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+
+        // Infer units for keys without any units associated with
+        // numeric tag values.
+        for (key, _) in encountered_keys {
+            if let Some(unit) = num_label_units.get(&key) {
+                if unit.is_empty() {
+                    match key.as_ref() {
+                        "alignment" | "request" => {
+                            num_label_units.insert(key, String::from("bytes"));
+                        }
+                        _ => {
+                            num_label_units.insert(key.clone(), key);
+                        }
+                    };
+                }
+            }
+        }
+
+        // Copy ignored units into more readable format
+        let mut units_ignored: HashMap<String, Vec<String>> = HashMap::new();
+
+        for (key, values) in ignored_units.iter() {
+            let mut units: Vec<String> = vec![String::new(); values.len()];
+
+            for (i, value) in values.iter().enumerate() {
+                let (unit, _) = value;
+                units.insert(i as usize, String::from(unit));
+            }
+
+            units.sort();
+            units_ignored.insert(String::from(key), units);
+        }
+
+        Ok((num_label_units, units_ignored))
     }
 }
