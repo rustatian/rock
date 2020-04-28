@@ -16,9 +16,7 @@ impl Report {
             prof: p,
             total: 1,
             options: opts,
-            format_value: Box::new(|_num: i64, o: Options| {
-                o.profile_path
-            }),
+            format_value: Box::new(|_num: i64, o: Options| o.profile_path),
         }
     }
 

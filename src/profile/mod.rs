@@ -580,8 +580,9 @@ impl Profile {
         // Infer units for keys without any units associated with
         // numeric tag values.
         for (key, _) in encountered_keys {
-            if let Some(unit) = num_label_units.get(&key) {
-                if unit.is_empty() {
+            let unit = num_label_units.get(&key);
+            match unit {
+                None => {
                     match key.as_ref() {
                         "alignment" | "request" => {
                             num_label_units.insert(key, String::from("bytes"));
@@ -591,6 +592,7 @@ impl Profile {
                         }
                     };
                 }
+                Some(_) => {}
             }
         }
 
@@ -610,5 +612,188 @@ impl Profile {
         }
 
         Ok((num_label_units, units_ignored))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::profile::sample::Sample;
+    use crate::profile::Profile;
+    use std::collections::HashMap;
+    use std::hash::Hash;
+
+    macro_rules! tag_vals_init (
+        { $($key:expr => $value:expr),+ } => {
+            {
+                let mut tag_vals = ::std::vec::Vec::new();
+                let mut m = ::std::collections::HashMap::new();
+                $(
+                    m.entry($key.to_string())
+                        .and_modify(|v:&mut Vec<i64>| v.push($value as i64))
+                        .or_insert(vec![$value as i64]);
+                )+
+                tag_vals.push(m);
+                tag_vals
+            }
+         };
+    );
+
+    macro_rules! tag_units_init (
+        { $($key:expr => $value:expr),+ } => {
+            {
+                let mut tag_vals = ::std::vec::Vec::new();
+                let mut m = ::std::collections::HashMap::new();
+                $(
+                    m.entry($key.to_string())
+                        .and_modify(|v:&mut Vec<String>| v.push($value.to_string()))
+                        .or_insert(vec![$value.to_string()]);
+                )+
+                tag_vals.push(m);
+                tag_vals
+            }
+         };
+    );
+
+    macro_rules! want_units_init (
+        { $($key:expr => $value:expr),+ } => {
+            {
+                let mut m = ::std::collections::HashMap::new();
+                $(
+                    m.insert($key.to_string(), $value.to_string());
+                )+
+                m
+            }
+         };
+    );
+
+    macro_rules! want_ignored_units_init (
+        { $($key:expr => $value:expr),+ } => {
+            {
+                let mut m = ::std::collections::HashMap::new();
+                $(
+                    m.entry($key.to_string())
+                        .and_modify(|v:&mut Vec<String>| v.push($value.to_string()))
+                        .or_insert(vec![$value.to_string()]);
+                )+
+                m
+            }
+         };
+    );
+
+    #[test]
+    fn test_num_label_units() {
+        struct TagFilterTests {
+            desc: String,
+            tag_vals: Vec<HashMap<String, Vec<i64>>>,
+            tag_units: Vec<HashMap<String, Vec<String>>>,
+            want_units: HashMap<String, String>,
+            want_ignored_units: HashMap<String, Vec<String>>,
+        }
+
+        let mut tests = vec![];
+
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, multiple keys, different specified units"),
+            tag_vals: tag_vals_init! {"key1" => 131072, "key2" => 128},
+            tag_units: tag_units_init!("key1" => "bytes", "key2" => "kilobytes"),
+            want_units: want_units_init!("key1" => "bytes", "key2" => "kilobytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, one key with one value, unit specified"),
+            tag_vals: tag_vals_init! {"key1" => 8},
+            tag_units: tag_units_init!("key1" => "bytes"),
+            want_units: want_units_init!("key1" => "bytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, one key with one value, empty unit specified"),
+            tag_vals: tag_vals_init! {"key1" => 8},
+            tag_units: tag_units_init!("key1" => ""),
+            want_units: want_units_init!("key1" => "key1"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("Key bytes, unit not specified"),
+            tag_vals: tag_vals_init! {"bytes" => 8},
+            tag_units: Vec::new(),
+            want_units: want_units_init!("bytes" => "bytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, one key with one value, unit not specified"),
+            tag_vals: tag_vals_init! {"kilobytes" => 8},
+            tag_units: Vec::new(),
+            want_units: want_units_init!("kilobytes" => "kilobytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("Key request, unit not specified"),
+            tag_vals: tag_vals_init! {"request" => 8},
+            tag_units: Vec::new(),
+            want_units: want_units_init!("request" => "bytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("Key alignment, unit not specified"),
+            tag_vals: tag_vals_init! {"alignment" => 8},
+            tag_units: Vec::new(),
+            want_units: want_units_init!("alignment" => "bytes"),
+            want_ignored_units: HashMap::new(),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, one key with multiple values and two different units"),
+            tag_vals: tag_vals_init! {"key1" => 8, "key1" => 8},
+            tag_units: tag_units_init!("key1" => "bytes", "key1" => "kilobytes"),
+            want_units: want_units_init!("key1" => "bytes"),
+            want_ignored_units: want_ignored_units_init!("key1" => "kilobytes"),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("One sample, one key with multiple values and three different units"),
+            tag_vals: tag_vals_init! {"key1" => 8, "key1" => 8},
+            tag_units: tag_units_init!("key1" => "bytes", "key1" => "megabytes", "key1" => "kilobytes"),
+            want_units: want_units_init!("key1" => "bytes"),
+            want_ignored_units: want_ignored_units_init!("key1" => "kilobytes", "key1" => "megabytes"),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("Two samples, one key, different units specified"),
+            tag_vals: tag_vals_init! {"key1" => 8, "key1" => 8},
+            tag_units: tag_units_init!("key1" => "bytes", "key1" => "kilobytes"),
+            want_units: want_units_init!("key1" => "bytes"),
+            want_ignored_units: want_ignored_units_init!("key1" => "kilobytes"),
+        });
+        tests.push(TagFilterTests {
+            desc: String::from("Keys alignment, request, and bytes have units specified"),
+            tag_vals: tag_vals_init! {"alignment" => 8, "request" => 8, "bytes" => 8},
+            tag_units: tag_units_init!("alignment" => "seconds", "request" => "minutes", "bytes" => "hours"),
+            want_units: want_units_init!("alignment" => "seconds", "request" => "minutes", "bytes" => "hours"),
+            want_ignored_units: HashMap::new(),
+        });
+
+        for test in tests {
+            let mut p = Profile::default();
+            for (i, num_label) in test.tag_vals.iter().enumerate() {
+                let mut s = Sample::default();
+
+                s.num_label = num_label.clone();
+                if test.tag_units.is_empty() {
+                    s.num_unit_label = HashMap::new();
+                } else {
+                    s.num_unit_label = test.tag_units[i].clone();
+                }
+
+                p.sample.push(s);
+            }
+
+            let (a, b) = p.num_label_units().unwrap();
+
+            assert_eq!(keys_match(&a, &test.want_units), true);
+            assert_eq!(keys_match(&b, &test.want_ignored_units), true);
+        }
+    }
+
+    fn keys_match<T: Eq + Hash, U, V>(map1: &HashMap<T, U>, map2: &HashMap<T, V>) -> bool {
+        let keys_ok = map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k));
+        keys_ok
     }
 }
