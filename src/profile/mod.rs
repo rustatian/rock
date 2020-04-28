@@ -785,15 +785,14 @@ mod tests {
                 p.sample.push(s);
             }
 
-            let (a, b) = p.num_label_units().unwrap();
+            let (units, ignore_units) = p.num_label_units().unwrap();
 
-            assert_eq!(keys_match(&a, &test.want_units), true);
-            assert_eq!(keys_match(&b, &test.want_ignored_units), true);
+            assert_eq!(keys_match(&units, &test.want_units), true);
+            assert_eq!(keys_match(&ignore_units, &test.want_ignored_units), true);
         }
     }
 
-    fn keys_match<T: Eq + Hash, U, V>(map1: &HashMap<T, U>, map2: &HashMap<T, V>) -> bool {
-        let keys_ok = map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k));
-        keys_ok
+    fn keys_match<T: Eq + Hash, U>(map1: &HashMap<T, U>, map2: &HashMap<T, U>) -> bool {
+        map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k))
     }
 }
