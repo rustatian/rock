@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![warn(missing_debug_implementations, rust_2018_idioms)]
 
 use crate::errors::RockError;
 use crate::profile::Profile;
@@ -12,7 +13,7 @@ mod http_server;
 mod profile;
 mod reports;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Options {
     profile_path: String,
 }

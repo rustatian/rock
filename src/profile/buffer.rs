@@ -5,14 +5,10 @@ use flate2::read::GzDecoder;
 
 use crate::errors::RockError;
 use crate::profile::Profile;
-use std::borrow::BorrowMut;
 use std::convert::From;
 use std::string::ToString;
 
-/// ProfileDecoder is a main trait to decode the profile
-///
-///
-///
+// ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {
     fn unmarshal(data: Vec<u8>) -> Result<Profile, RockError>;
 }
@@ -117,7 +113,7 @@ impl Buffer {
             match res {
                 Ok(()) => {
                     let mut data = buf.data.clone();
-                    Profile::decode_profile(profile, buf, data.borrow_mut());
+                    Profile::decode_profile(profile, buf, &mut data);
                 }
                 Err(err) => {
                     panic!(err);

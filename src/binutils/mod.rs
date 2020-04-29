@@ -1,3 +1,4 @@
+#![warn(missing_debug_implementations, rust_2018_idioms)]
 use crate::binutils::binrep::Binrep;
 use crate::errors::RockError;
 

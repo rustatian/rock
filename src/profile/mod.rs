@@ -1,3 +1,4 @@
+#![warn(missing_debug_implementations, rust_2018_idioms)]
 use crate::errors::RockError;
 use crate::profile::buffer::{decode_string, Buffer, WireTypes};
 use chrono::NaiveDateTime;
@@ -164,6 +165,9 @@ impl ToString for Profile {
 }
 
 impl Profile {
+    pub fn new(_buf: Buffer, _data: Vec<u8>) -> Self {
+        Profile::default()
+    }
     #[inline]
     pub fn decode_profile(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
         match buf.field {
