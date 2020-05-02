@@ -15,7 +15,7 @@ pub trait ProfileDecoder {
 
 // Constants that identify the encoding of a value on the wire.
 #[repr(u8)]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WireTypes {
     WireVarint = 0,
     WireFixed64 = 1,
@@ -35,7 +35,7 @@ impl From<usize> for WireTypes {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Buffer {
     pub field: usize,
     pub r#type: WireTypes,
@@ -110,7 +110,7 @@ impl Buffer {
             match res {
                 Ok(()) => {
                     let mut data = buf.data.clone();
-                    Profile::decode_profile(profile, buf, &mut data);
+                    Profile::decode_profile_field(profile, buf, &mut data);
                 }
                 Err(err) => {
                     panic!(err);
@@ -226,9 +226,9 @@ impl Buffer {
             // 0011101100000000
             // 0011101101010110 = 15190
             u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-                                                                          // here we check all 8 bits for MSB
-                                                                          // if all bits are zero, we'are done
-                                                                          // if not, MSB is set and there is presents next byte to read
+            // here we check all 8 bits for MSB
+            // if all bits are zero, we'are done
+            // if not, MSB is set and there is presents next byte to read
             if buf[i] & 0x80 == 0 {
                 // drain first i-th number of elements
                 buf.drain(..=i);
@@ -269,13 +269,6 @@ mod profile_test {
     use std::io::Read;
 
     use crate::profile::buffer::ProfileDecoder;
-    use crate::profile::function::Function;
-    use crate::profile::line::Line;
-    use crate::profile::location::Location;
-    use crate::profile::mapping::Mapping;
-    use crate::profile::sample::Sample;
-    use crate::profile::value_type::ValueType;
-    use crate::profile::Profile;
 
     #[test]
     fn parse() {

@@ -38,7 +38,7 @@ pub fn profile_bench_encoded(c: &mut Criterion) {
         Ok(mut file) => {
             let mut buffer = vec![];
             let _ = file.read_to_end(&mut buffer);
-            c.bench_function("profile_bench_heap", |b| {
+            c.bench_function("profile_bench_encoded", |b| {
                 b.iter(|| Buffer::decode(black_box(buffer.clone())))
             });
         }

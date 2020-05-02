@@ -1,4 +1,5 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
+
 use crate::errors::RockError;
 use crate::profile::buffer::{decode_string, Buffer, WireTypes};
 use chrono::NaiveDateTime;
@@ -81,7 +82,8 @@ pub struct Profile {
     // Index into string table.
     keep_frames_index: i64,
 
-    default_sample_type_index: i64, // Index into string table.
+    // Index into string table.
+    default_sample_type_index: i64,
 }
 
 type NumLabelUnitsWithIgnored = (HashMap<String, String>, HashMap<String, Vec<String>>);
@@ -165,11 +167,8 @@ impl ToString for Profile {
 }
 
 impl Profile {
-    pub fn new(_buf: Buffer, _data: Vec<u8>) -> Self {
-        Profile::default()
-    }
     #[inline]
-    pub fn decode_profile(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
+    pub fn decode_profile_field(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
         match buf.field {
             // repeated ValueType sample_type = 1
             1 => {
@@ -251,6 +250,7 @@ impl Profile {
             _ => {}
         }
     }
+
 
     #[inline]
     pub fn post_decode(&mut self) {
@@ -522,7 +522,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(
@@ -698,7 +698,7 @@ mod tests {
 
         tests.push(TagFilterTests {
             desc: String::from("One sample, multiple keys, different specified units"),
-            tag_vals: tag_vals_init! {"key1" => 131072, "key2" => 128},
+            tag_vals: tag_vals_init! {"key1" => 131_072, "key2" => 128},
             tag_units: tag_units_init!("key1" => "bytes", "key2" => "kilobytes"),
             want_units: want_units_init!("key1" => "bytes", "key2" => "kilobytes"),
             want_ignored_units: HashMap::new(),
