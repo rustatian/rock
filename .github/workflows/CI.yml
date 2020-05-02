@@ -83,7 +83,7 @@ jobs:
           command: build
           args: --manifest-path Cargo.toml
 
-      - name: Build
+      - name: Bench
         uses: actions-rs/cargo@v1
         with:
           command: bench
