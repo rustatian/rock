@@ -10,7 +10,7 @@ mod binutils;
 mod driver;
 mod errors;
 mod http_server;
-mod profile;
+pub mod profile;
 mod reports;
 
 #[derive(Default, Debug)]
@@ -35,7 +35,7 @@ fn pprof(op: &mut Options) {
 
 fn load_binary(path: &str) -> Result<Profile, RockError> {
     match std::fs::read(path) {
-        Ok(data) => match profile::buffer::Buffer::unmarshal(data) {
+        Ok(data) => match profile::buffer::Buffer::decode(data) {
             Ok(res) => Ok(res),
             Err(err) => Err(err),
         },

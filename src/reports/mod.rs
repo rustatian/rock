@@ -14,7 +14,8 @@ pub struct Report<'rep> {
 
 impl<'rep> Report<'rep> {
     fn generate_raw_report(&self, p: &'rep Profile, opts: &'rep Options) -> Self {
-        let _num_label_units = self.identify_num_label_units(opts, p);
+        let num_label_units = self.identify_num_label_units(opts, p);
+
 
         Report {
             prof: p,

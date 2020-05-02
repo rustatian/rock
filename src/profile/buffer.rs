@@ -10,7 +10,7 @@ use std::string::ToString;
 
 // ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {
-    fn unmarshal(data: Vec<u8>) -> Result<Profile, RockError>;
+    fn decode(data: Vec<u8>) -> Result<Profile, RockError>;
 }
 
 // Constants that identify the encoding of a value on the wire.
@@ -20,9 +20,6 @@ pub enum WireTypes {
     WireVarint = 0,
     WireFixed64 = 1,
     WireBytes = 2,
-    // todo!(use later for legacy profiles parsing)
-    //WireStartGroup = 3,
-    //WireEndGroup = 4,
     WireFixed32 = 5,
 }
 
@@ -47,7 +44,7 @@ pub struct Buffer {
 }
 
 impl ProfileDecoder for Buffer {
-    fn unmarshal(mut data: Vec<u8>) -> Result<Profile, RockError> {
+    fn decode(mut data: Vec<u8>) -> Result<Profile, RockError> {
         // check is there data gzipped
         // https://tools.ietf.org/html/rfc1952#page-5
         if data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b {
@@ -229,9 +226,9 @@ impl Buffer {
             // 0011101100000000
             // 0011101101010110 = 15190
             u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-                                                                          // here we check all 8 bits for MSB
-                                                                          // if all bits are zero, we'are done
-                                                                          // if not, MSB is set and there is presents next byte to read
+            // here we check all 8 bits for MSB
+            // if all bits are zero, we'are done
+            // if not, MSB is set and there is presents next byte to read
             if buf[i] & 0x80 == 0 {
                 // drain first i-th number of elements
                 buf.drain(..=i);
@@ -307,7 +304,7 @@ mod profile_test {
                     let mut buffer = vec![];
                     let _ = file.read_to_end(&mut buffer);
 
-                    let r = super::Buffer::unmarshal(buffer);
+                    let r = super::Buffer::decode(buffer);
                     match r {
                         Ok(b) => {
                             assert_eq!(b.to_string().trim_end(), golden_file);
@@ -322,7 +319,7 @@ mod profile_test {
         }
     }
 
-    //    #[test]
+    #[test]
     fn _profile_all_fields() {
         let m = vec![
             Mapping {
