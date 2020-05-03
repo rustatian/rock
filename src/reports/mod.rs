@@ -1,7 +1,7 @@
 use crate::errors::RockError;
 use crate::profile::Profile;
-use crate::Options;
 use std::collections::HashMap;
+use crate::Options;
 
 mod graph;
 
@@ -28,7 +28,6 @@ impl<'rep> Report<'rep> {
 
     fn generate_raw_report(&self, p: &'rep Profile, opts: &'rep Options) -> Self {
         let num_label_units = self.identify_num_label_units(opts, p);
-
 
         Report {
             prof: p,

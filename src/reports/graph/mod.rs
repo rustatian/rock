@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use crate::profile::Profile;
 use crate::Options;
+use std::collections::HashMap;
 
 pub(crate) struct Graph<'gr> {
     profile: &'gr Profile,
@@ -9,7 +9,7 @@ pub(crate) struct Graph<'gr> {
 
 #[derive(Default)]
 struct Nodes<'gr> {
-    nodes: Vec<&'gr Node<'gr>>
+    nodes: Vec<&'gr Node<'gr>>,
 }
 
 #[derive(Default)]
@@ -36,7 +36,6 @@ struct Node<'gr> {
     numeric_tags: HashMap<&'gr str, TagMap<'gr>>,
 }
 
-
 // gr lifetime used for graph
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 struct NodeInfo<'gr> {
@@ -47,7 +46,6 @@ struct NodeInfo<'gr> {
     start_line: isize,
     lineno: isize,
     obj_file: &'gr str,
-
 }
 
 type EdgeMap<'gr> = HashMap<&'gr Node<'gr>, &'gr Edge<'gr>>;
@@ -88,7 +86,8 @@ impl<'gr> Graph<'gr> {
     // returns set of all nodes, plus a mapping of each location to the
     // set of corresponding nodes (one per location.Line).
     fn create_nodes(&mut self, opt: Options) {
-        let mut locations: HashMap<u64, Nodes<'_>> = HashMap::with_capacity(self.profile.location.len());
+        let mut locations: HashMap<u64, Nodes<'_>> =
+            HashMap::with_capacity(self.profile.location.len());
 
         let mut nm = NodeMap::default();
 
@@ -96,27 +95,9 @@ impl<'gr> Graph<'gr> {
             let mut lines = l.line.clone();
             let mut nodes = Nodes::default();
 
-
             for ln in lines {
                 // nodes[ln] =
             }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

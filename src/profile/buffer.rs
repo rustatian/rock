@@ -266,7 +266,7 @@ pub fn decode_string(v: &[u8]) -> String {
 #[cfg(test)]
 mod profile_test {
     use std::collections::HashMap;
-    use std::io::Read;
+    use std::io::{Read};
 
     use crate::profile::buffer::ProfileDecoder;
 
@@ -289,6 +289,11 @@ mod profile_test {
             String::from("tests/encoded.string"),
         );
 
+        test_data.insert(
+            String::from("tests/RR_CPU.pb.gz"),
+            String::from("tests/RR_CPU_golden.string"),
+        );
+
         for (k, v) in test_data.iter() {
             let r_file_res = std::fs::File::open(k);
             let golden_file = std::fs::read_to_string(v).unwrap();
@@ -296,11 +301,10 @@ mod profile_test {
                 Ok(mut file) => {
                     let mut buffer = vec![];
                     let _ = file.read_to_end(&mut buffer);
-
                     let r = super::Buffer::decode(buffer);
                     match r {
                         Ok(b) => {
-                            assert_eq!(b.to_string().trim_end(), golden_file);
+                            assert_eq!(b.to_string().trim_end().eq(&golden_file), true);
                         }
                         Err(err) => {
                             panic!(err);

@@ -47,9 +47,9 @@ fn load_binary(path: &str) -> Result<Profile, RockError> {
     }
 }
 
-#[cfg(test)]
+// #[cfg(test)]
 mod lib_tests {
-    #[test]
+    // #[test]
     fn main_tests() {
         let mut op = super::Options::default();
         op.profile_path = "tests/CPU.pb.gz".to_string();
