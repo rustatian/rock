@@ -1,10 +1,25 @@
 use std::collections::HashMap;
 use crate::profile::Profile;
+use crate::Options;
 
-type Nodes<'gr> = Vec<&'gr Node<'gr>>;
-
-struct Graph<'gr> {
+pub(crate) struct Graph<'gr> {
+    profile: &'gr Profile,
     nodes: Nodes<'gr>,
+}
+
+#[derive(Default)]
+struct Nodes<'gr> {
+    nodes: Vec<&'gr Node<'gr>>
+}
+
+#[derive(Default)]
+struct NodeSet<'gr> {
+    node_set: HashMap<NodeInfo<'gr>, bool>,
+}
+
+#[derive(Default)]
+struct NodeMap<'gr> {
+    node_map: HashMap<NodeInfo<'gr>, &'gr Node<'gr>>,
 }
 
 #[derive(Debug, Clone)]
@@ -31,7 +46,7 @@ struct NodeInfo<'gr> {
     file: &'gr str,
     start_line: isize,
     lineno: isize,
-    objfile: &'gr str,
+    obj_file: &'gr str,
 
 }
 
@@ -60,9 +75,31 @@ struct Tag<'gr> {
 }
 
 impl<'gr> Graph<'gr> {
-    fn new(p: &'_ Profile) -> Self {
+    pub(crate) fn new(p: &'gr Profile) -> Self {
         Graph {
-            nodes: vec![]
+            profile: p,
+            nodes: Nodes::default(),
+        }
+    }
+
+    fn init_graph(&mut self) {}
+
+    // CreateNodes creates graph nodes for all locations in a profile. It
+    // returns set of all nodes, plus a mapping of each location to the
+    // set of corresponding nodes (one per location.Line).
+    fn create_nodes(&mut self, opt: Options) {
+        let mut locations: HashMap<u64, Nodes<'_>> = HashMap::with_capacity(self.profile.location.len());
+
+        let mut nm = NodeMap::default();
+
+        for (_, l) in self.profile.location.iter().enumerate() {
+            let mut lines = l.line.clone();
+            let mut nodes = Nodes::default();
+
+
+            for ln in lines {
+                // nodes[ln] =
+            }
         }
     }
 }

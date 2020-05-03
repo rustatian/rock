@@ -43,7 +43,7 @@ pub struct Profile {
     // into that address range.  mapping[0] will be the main binary.
     mapping: Vec<mapping::Mapping>,
     // Useful program location
-    location: Vec<location::Location>,
+    pub location: Vec<location::Location>,
     // Functions referenced by locations
     function: Vec<function::Function>,
     // A common table for strings referenced by various messages.

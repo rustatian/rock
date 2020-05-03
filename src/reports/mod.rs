@@ -13,10 +13,17 @@ pub struct Report<'rep> {
 }
 
 impl<'rep> Report<'rep> {
-    fn generate_report(&self, p: &'rep Profile, opts: &'rep Options) {
-        let mut rptr = self.generate_raw_report(p, opts);
+    pub fn new(p: &'rep Profile, opts: &'rep Options) -> Self {
+        Report {
+            prof: p,
+            options: opts,
+            total: 0,
+        }
+    }
 
-
+    fn generate_report(&self) {
+        let mut rptr = self.generate_raw_report(self.prof, self.options);
+        let g = graph::Graph::new(self.prof);
     }
 
     fn generate_raw_report(&self, p: &'rep Profile, opts: &'rep Options) -> Self {

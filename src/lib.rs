@@ -31,6 +31,8 @@ fn pprof(op: &mut Options) {
 
     let profile = load_binary(&op.profile_path).unwrap();
     println!("{}", profile.to_string());
+
+    let mut prooo = reports::Report::new(&profile, op);
 }
 
 fn load_binary(path: &str) -> Result<Profile, RockError> {

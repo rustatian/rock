@@ -46,10 +46,10 @@ pub fn profile_bench_encoded(c: &mut Criterion) {
     }
 }
 
-criterion_group!(
-    benches,
-    profile_bench_cpu,
-    profile_bench_heap,
-    profile_bench_encoded
-);
+criterion_group! {
+    name = benches;
+    config = Criterion::default().sample_size(300).nresamples(5000).measurement_time(Duration::from_secs(60)).warm_up_time(Duration::from_secs(5));
+    targets = profile_bench_cpu, profile_bench_heap, profile_bench_encoded
+}
+
 criterion_main!(benches);
