@@ -1,22 +1,13 @@
 #![allow(dead_code)]
 #![warn(missing_debug_implementations, rust_2018_idioms)]
-
-use crate::errors::RockError;
-use crate::profile::Profile;
-use profile::buffer::ProfileDecoder;
 use std::path::Path;
-
-mod binutils;
-mod driver;
-mod errors;
-mod http_server;
-pub mod profile;
-mod reports;
-
-#[derive(Default, Debug)]
-pub struct Options {
-    profile_path: String,
-}
+use rock_parser::profile::Profile;
+use rock_parser::profile;
+use rock_parser::profile::buffer::ProfileDecoder;
+use rock_utils::types;
+use rock_reports::reports;
+use crate::types::Options;
+use rock_utils::errors::RockError;
 
 fn pprof(op: &mut Options) {
     if op.profile_path.is_empty() {
@@ -44,15 +35,5 @@ fn load_binary(path: &str) -> Result<Profile, RockError> {
         Err(err) => Err(RockError::Unknown {
             reason: err.to_string(),
         }),
-    }
-}
-
-// #[cfg(test)]
-mod lib_tests {
-    // #[test]
-    fn main_tests() {
-        let mut op = super::Options::default();
-        op.profile_path = "tests/CPU.pb.gz".to_string();
-        super::pprof(&mut op);
     }
 }

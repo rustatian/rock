@@ -3,10 +3,10 @@ use std::ops::{Shl, Shr};
 
 use flate2::read::GzDecoder;
 
-use crate::errors::RockError;
 use crate::profile::Profile;
 use std::convert::From;
 use std::string::ToString;
+use rock_utils::errors::RockError;
 
 // ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {

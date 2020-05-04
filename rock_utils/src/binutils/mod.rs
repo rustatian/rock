@@ -36,7 +36,7 @@ trait ObjFile {
     // BuildID returns the GNU build ID of the file, or an empty string.
     fn build_id() -> String;
 
-    // SourceLine reports the source line information for a given
+    // SourceLine rock_reports the source line information for a given
     // address in the file. Due to inlining, the source line information
     // is in general a list of positions representing a call stack,
     // with the leaf function first.

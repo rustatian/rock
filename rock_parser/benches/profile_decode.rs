@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use rock::profile::buffer::{Buffer, ProfileDecoder};
 use std::io::Read;
 use std::time::Duration;
+use rock_parser::profile::buffer::{Buffer, ProfileDecoder};
 
 pub fn profile_bench_cpu(c: &mut Criterion) {
     let r_file_res = std::fs::File::open("tests/CPU.pb.gz");

@@ -1,11 +1,10 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
-
-use crate::errors::RockError;
 use crate::profile::buffer::{decode_string, Buffer, WireTypes};
 use chrono::NaiveDateTime;
 use std::borrow::Borrow;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use rock_utils::errors::RockError;
 
 pub mod buffer;
 mod function;
