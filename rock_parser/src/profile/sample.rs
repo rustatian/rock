@@ -1,4 +1,4 @@
-use crate::profile::buffer::{Buffer, WireTypes};
+use crate::profile::buffer::{Buffer, WireTypes, decode_varint, decode_field};
 use crate::profile::{label, location, Decoder};
 use std::collections::HashMap;
 
@@ -37,7 +37,7 @@ impl Decoder<Sample> for Sample {
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Sample {
         let mut s = Sample::default();
         while !data.is_empty() {
-            match Buffer::decode_field(buf, data) {
+            match decode_field(buf, data) {
                 Ok(()) => {
                     match buf.field {
                         //1
@@ -46,7 +46,7 @@ impl Decoder<Sample> for Sample {
                             match buf.r#type {
                                 WireTypes::WireBytes => {
                                     while !d.is_empty() {
-                                        match Buffer::decode_varint(&mut d) {
+                                        match decode_varint(&mut d) {
                                             Ok(varint) => s.location_index.push(varint as u64),
                                             Err(err) => {
                                                 panic!(err);
@@ -70,7 +70,7 @@ impl Decoder<Sample> for Sample {
                             match buf.r#type {
                                 WireTypes::WireBytes => {
                                     while !d.is_empty() {
-                                        match Buffer::decode_varint(&mut d) {
+                                        match decode_varint(&mut d) {
                                             Ok(varint) => s.value.push(varint as i64),
                                             Err(err) => {
                                                 panic!(err);

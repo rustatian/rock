@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
 
@@ -42,7 +42,7 @@ impl Decoder<Location> for Location {
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Location {
         let mut loc = Location::default();
         while !data.is_empty() {
-            match Buffer::decode_field(buf, data) {
+            match decode_field(buf, data) {
                 Ok(()) => {
                     match buf.field {
                         // optional uint64 function_id = 1
@@ -59,8 +59,9 @@ impl Decoder<Location> for Location {
                         }
                         // repeated Line line = 4
                         4 => {
+                            // todo!(why buf copied twice) ?????
                             loc.line
-                                .push(line::Line::decode(buf, buf.data.clone().as_mut()));
+                                .push(line::Line::decode(buf, &mut buf.data.clone()));
                         }
                         5 => {
                             if buf.u64 == 0 {

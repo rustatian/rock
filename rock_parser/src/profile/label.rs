@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -25,7 +25,7 @@ impl Decoder<Label> for Label {
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Label {
         let mut lb = Label::default();
         while !data.is_empty() {
-            match Buffer::decode_field(buf, data) {
+            match decode_field(buf, data) {
                 Ok(()) => {
                     match buf.field {
                         //1

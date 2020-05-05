@@ -1,5 +1,5 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
-use crate::profile::buffer::{decode_string, Buffer, WireTypes};
+use crate::profile::buffer::{decode_string, Buffer, WireTypes, decode_varint};
 use chrono::NaiveDateTime;
 use std::borrow::Borrow;
 use std::collections::hash_map::Entry;
@@ -229,7 +229,7 @@ impl Profile {
             13 => match buf.r#type {
                 WireTypes::WireBytes => loop {
                     if !data.is_empty() {
-                        let res = Buffer::decode_varint(data);
+                        let res = decode_varint(data);
                         match res {
                             Ok(varint) => self.comment_index.push(varint as i64),
                             Err(err) => {

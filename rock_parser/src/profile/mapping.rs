@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
 use std::default::Default;
 
@@ -41,7 +41,7 @@ impl Decoder<Mapping> for Mapping {
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Mapping {
         let mut mapping = Mapping::default();
         while !data.is_empty() {
-            match Buffer::decode_field(buf, data) {
+            match decode_field(buf, data) {
                 Ok(()) => {
                     match buf.field {
                         //1

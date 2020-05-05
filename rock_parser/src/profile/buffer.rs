@@ -62,7 +62,7 @@ impl ProfileDecoder for Buffer {
                     };
 
                     let mut p = Profile::default();
-                    Buffer::decode_message(&mut b, uncompressed.as_mut(), &mut p);
+                    decode_message(&mut b, uncompressed.as_mut(), &mut p);
                     p.post_decode();
                     match p.validate() {
                         Ok(_) => Ok(p),
@@ -85,7 +85,7 @@ impl ProfileDecoder for Buffer {
         };
         // data not in the buffer, since the data in the buffer used for internal processing
         let mut p = Profile::default();
-        Buffer::decode_message(&mut b, &mut data, &mut p);
+        decode_message(&mut b, &mut data, &mut p);
         p.post_decode();
         match p.validate() {
             Ok(_) => Ok(p),
@@ -94,148 +94,146 @@ impl ProfileDecoder for Buffer {
     }
 }
 
-impl Buffer {
-    #[inline]
-    pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profile) {
-        if buf.r#type != WireTypes::WireBytes {
-            panic!("WireTypes not Equal WireBytes");
-        }
-
-        while !data.is_empty() {
-            // here we decode data, the algorithm is following:
-            // 1. We pass whole data and buffer to the decode_field function
-            // 2. As the result we get main data (which drained to the buffer size) and buffer with that drained data filled with other fields
-            // 3. We also calculate field, type and u64 fields to pass it to Profile::decode_profile function
-            let res = Buffer::decode_field(buf, data);
-            match res {
-                Ok(()) => {
-                    let mut data = buf.data.clone();
-                    Profile::decode_profile_field(profile, buf, &mut data);
-                }
-                Err(err) => {
-                    panic!(err);
-                }
-            }
-        }
+#[inline]
+pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profile) {
+    if buf.r#type != WireTypes::WireBytes {
+        panic!("WireTypes not Equal WireBytes");
     }
 
-    // decode_field is used to decode fields from incoming data
-    // buf -> buffer with data to allocate
-    // data -> unparsed data
-    #[inline]
-    pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockError> {
-        let result = Buffer::decode_varint(data);
-        match result {
-            Ok(varint) => {
-                // decode
-                // 90 -> 1011010
-                // after right shift -> 1011, this is field number in proto
-                // then we're doing AND operation and getting 7 bits
-                buf.field = varint.shr(3);
-                buf.r#type = WireTypes::from(varint & 7);
-                buf.u64 = 0;
-                buf.data = Vec::new();
-
-                // this is returned type
-                match buf.r#type {
-                    //0
-                    WireTypes::WireVarint => match Buffer::decode_varint(data) {
-                        Ok(varint) => {
-                            buf.u64 = varint as u64;
-                            Ok(())
-                        }
-                        Err(err) => Err(err),
-                    },
-                    //1
-                    WireTypes::WireFixed64 => {
-                        if data.len() < 8 {
-                            return Err(RockError::DecodeFieldFailed {
-                                reason: "data len less than 8 bytes".to_string(),
-                            });
-                        }
-                        buf.u64 = decode_fixed64(&data[..8]);
-                        // drain first 8 elements
-                        data.drain(..8);
-                        Ok(())
-                    }
-                    //2
-                    WireTypes::WireBytes => {
-                        match Buffer::decode_varint(data) {
-                            Ok(varint) => {
-                                if varint > data.len() {
-                                    return Err(RockError::DecodeFieldFailed {
-                                        reason: "too much data".to_string(),
-                                    });
-                                }
-                                buf.data = data[..varint].to_owned();
-                                // draint vec, start index removing decoded data
-                                data.drain(..varint);
-                                Ok(())
-                            }
-                            Err(err) => Err(err),
-                        }
-                    }
-
-                    //5
-                    WireTypes::WireFixed32 => {
-                        if data.len() < 4 {
-                            return Err(RockError::DecodeFieldFailed {
-                                reason: "data len less than 8 bytes".to_string(),
-                            });
-                        }
-                        buf.u64 = decode_fixed32(&data[..4]) as u64;
-                        data.drain(..4);
-                        Ok(())
-                    }
-                }
+    while !data.is_empty() {
+        // here we decode data, the algorithm is following:
+        // 1. We pass whole data and buffer to the decode_field function
+        // 2. As the result we get main data (which drained to the buffer size) and buffer with that drained data filled with other fields
+        // 3. We also calculate field, type and u64 fields to pass it to Profile::decode_profile function
+        let res = decode_field(buf, data);
+        match res {
+            Ok(()) => {
+                let mut data = buf.data.clone();
+                Profile::decode_profile_field(profile, buf, &mut data);
             }
             Err(err) => {
                 panic!(err);
             }
         }
     }
+}
 
-    /// return parameters:
-    /// u8 --> current decoded varint
-    /// &[u8] --> subslice of incoming data w/o the decoded varint
-    /// todo!(https://github.com/golang/protobuf/commit/5d356b9d1c22e345c2ea08432302e82fd02d8a61);
-    #[inline]
-    pub fn decode_varint(buf: &mut Vec<u8>) -> Result<usize, RockError> {
-        let mut u: usize = 0;
-        let mut i: usize = 0;
+// decode_field is used to decode fields from incoming data
+// buf -> buffer with data to allocate
+// data -> unparsed data
+#[inline]
+pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockError> {
+    let result = decode_varint(data);
+    match result {
+        Ok(varint) => {
+            // decode
+            // 90 -> 1011010
+            // after right shift -> 1011, this is field number in proto
+            // then we're doing AND operation and getting 7 bits
+            buf.field = varint.shr(3);
+            buf.r#type = WireTypes::from(varint & 7);
+            buf.u64 = 0;
+            buf.data = Vec::new();
 
-        loop {
-            // Message should be no more than 10 bytes
-            if i >= 10 || i >= buf.len() {
-                return Err(RockError::DecodeFieldFailed {
-                    reason: "bad varint".to_string(),
-                });
+            // this is returned type
+            match buf.r#type {
+                //0
+                WireTypes::WireVarint => match decode_varint(data) {
+                    Ok(varint) => {
+                        buf.u64 = varint as u64;
+                        Ok(())
+                    }
+                    Err(err) => Err(err),
+                },
+                //1
+                WireTypes::WireFixed64 => {
+                    if data.len() < 8 {
+                        return Err(RockError::DecodeFieldFailed {
+                            reason: "data len less than 8 bytes".to_string(),
+                        });
+                    }
+                    buf.u64 = decode_fixed64(&data[..8]);
+                    // drain first 8 elements
+                    data.drain(..8);
+                    Ok(())
+                }
+                //2
+                WireTypes::WireBytes => {
+                    match decode_varint(data) {
+                        Ok(varint) => {
+                            if varint > data.len() {
+                                return Err(RockError::DecodeFieldFailed {
+                                    reason: "too much data".to_string(),
+                                });
+                            }
+                            buf.data = data[..varint].to_owned();
+                            // draint vec, start index removing decoded data
+                            data.drain(..varint);
+                            Ok(())
+                        }
+                        Err(err) => Err(err),
+                    }
+                }
+
+                //5
+                WireTypes::WireFixed32 => {
+                    if data.len() < 4 {
+                        return Err(RockError::DecodeFieldFailed {
+                            reason: "data len less than 8 bytes".to_string(),
+                        });
+                    }
+                    buf.u64 = decode_fixed32(&data[..4]) as u64;
+                    data.drain(..4);
+                    Ok(())
+                }
             }
-
-            // get 7 bits except MSB
-            // here is would be a number w/o the sign bit
-            // 0x7F --> 127. So, if the number in the self.data[i]
-            // is eq to 127 there is probably MSB would be set to 1, and if it is
-            // there is would be a second 7 bits of information
-            // than we shift like this:
-            //  1010 1100 0000 0010
-            //  →010 1100  000 0010
-            // and doing OR, because OR is like an ADDITION while A & B == 0
-            // 86 | 15104 == 15190
-            //         01010110         OR
-            // 0011101100000000
-            // 0011101101010110 = 15190
-            u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-            // here we check all 8 bits for MSB
-            // if all bits are zero, we'are done
-            // if not, MSB is set and there is presents next byte to read
-            if buf[i] & 0x80 == 0 {
-                // drain first i-th number of elements
-                buf.drain(..=i);
-                return Ok(u);
-            }
-            i += 1;
         }
+        Err(err) => {
+            panic!(err);
+        }
+    }
+}
+
+/// return parameters:
+/// u8 --> current decoded varint
+/// &[u8] --> subslice of incoming data w/o the decoded varint
+/// todo!(https://github.com/golang/protobuf/commit/5d356b9d1c22e345c2ea08432302e82fd02d8a61);
+#[inline(always)]
+pub fn decode_varint(buf: &mut Vec<u8>) -> Result<usize, RockError> {
+    let mut u: usize = 0;
+    let mut i: usize = 0;
+
+    loop {
+        // Message should be no more than 10 bytes
+        if i >= 10 || i >= buf.len() {
+            return Err(RockError::DecodeFieldFailed {
+                reason: "bad varint".to_string(),
+            });
+        }
+
+        // get 7 bits except MSB
+        // here is would be a number w/o the sign bit
+        // 0x7F --> 127. So, if the number in the self.data[i]
+        // is eq to 127 there is probably MSB would be set to 1, and if it is
+        // there is would be a second 7 bits of information
+        // than we shift like this:
+        //  1010 1100 0000 0010
+        //  →010 1100  000 0010
+        // and doing OR, because OR is like an ADDITION while A & B == 0
+        // 86 | 15104 == 15190
+        //         01010110         OR
+        // 0011101100000000
+        // 0011101101010110 = 15190
+        u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
+        // here we check all 8 bits for MSB
+        // if all bits are zero, we'are done
+        // if not, MSB is set and there is presents next byte to read
+        if buf[i] & 0x80 == 0 {
+            // drain first i-th number of elements
+            buf.drain(..=i);
+            return Ok(u);
+        }
+        i += 1;
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::{function, Decoder};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -17,7 +17,7 @@ impl Decoder<Line> for Line {
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Line {
         let mut line = Line::default();
         while !data.is_empty() {
-            match Buffer::decode_field(buf, data) {
+            match decode_field(buf, data) {
                 Ok(()) => {
                     match buf.field {
                         // optional uint64 function_id = 1
