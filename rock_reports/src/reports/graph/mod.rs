@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use rock_parser::profile::Profile;
 use rock_utils::types::Options;
+use std::collections::HashMap;
 
 pub(crate) struct Graph<'gr> {
     profile: &'gr Profile,

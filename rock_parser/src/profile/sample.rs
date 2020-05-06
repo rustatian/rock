@@ -1,8 +1,8 @@
-use crate::profile::buffer::{Buffer, WireTypes, decode_varint, decode_field};
+use crate::profile::buffer::{decode_field, decode_varint, Buffer, WireTypes};
 use crate::profile::{label, location, Decoder};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Each Sample records values encountered in some program
@@ -44,11 +44,10 @@ impl Decoder<Sample> for Sample {
                     match buf.field {
                         //1
                         1 => {
-                            let mut d = buf.data.clone();
                             match buf.r#type {
                                 WireTypes::WireBytes => {
-                                    while !d.borrow().is_empty() {
-                                        match decode_varint(d.clone()) {
+                                    while !buf.data.borrow().is_empty() {
+                                        match decode_varint(buf.data.clone()) {
                                             Ok(varint) => s.location_index.push(varint as u64),
                                             Err(err) => {
                                                 panic!(err);
@@ -68,11 +67,10 @@ impl Decoder<Sample> for Sample {
                         }
                         //2
                         2 => {
-                            let mut d = buf.data.clone();
                             match buf.r#type {
                                 WireTypes::WireBytes => {
-                                    while !d.borrow().is_empty() {
-                                        match decode_varint(d.clone()) {
+                                    while !buf.data.borrow().is_empty() {
+                                        match decode_varint(buf.data.clone()) {
                                             Ok(varint) => s.value.push(varint as i64),
                                             Err(err) => {
                                                 panic!(err);

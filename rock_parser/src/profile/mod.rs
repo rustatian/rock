@@ -1,13 +1,13 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
 
-use crate::profile::buffer::{decode_string, Buffer, WireTypes, decode_varint};
+use crate::profile::buffer::{decode_string, decode_varint, Buffer, WireTypes};
 use chrono::NaiveDateTime;
-use std::borrow::{Borrow};
+use rock_utils::errors::RockError;
+use std::borrow::Borrow;
+use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use rock_utils::errors::RockError;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 pub mod buffer;
 mod function;
@@ -195,7 +195,8 @@ impl Profile {
             }
             // repeated string string_table = 6
             6 => {
-                self.string_table.push(decode_string(data.borrow_mut().as_ref()));
+                self.string_table
+                    .push(decode_string(data.borrow_mut().as_ref()));
                 if self.string_table[0] != "" {
                     panic!("String table[0] should be empty");
                 }
@@ -275,11 +276,8 @@ impl Profile {
         //LOCATION DECODE
         let mut locations: HashMap<u64, location::Location> = HashMap::new();
         for loc in self.location.iter_mut() {
-            match mappings.get(loc.mapping_index.borrow()) {
-                None => {}
-                Some(m) => {
-                    loc.mapping = Option::from(m.clone());
-                }
+            if let Some(m) = mappings.get(loc.mapping_index.borrow()) {
+                loc.mapping = Option::from(m.clone());
             }
 
             for line in loc.line.iter_mut() {
@@ -313,8 +311,6 @@ impl Profile {
                         .and_modify(|e| e.push(key_value.clone()))
                         .or_insert_with(|| vec![key_value]);
                 } else if label_index.num_index != 0 {
-                    //let num_values = num_labels.get(&key); // used only to padStringArray
-                    //let units = num_units.get_mut(&key);
                     if label_index.num_unit_index != 0 {
                         let unit =
                             self.string_table[label_index.num_unit_index as usize].to_string();
@@ -523,7 +519,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(

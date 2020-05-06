@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 #![warn(missing_debug_implementations, rust_2018_idioms)]
-use std::path::Path;
-use rock_parser::profile::Profile;
+use crate::types::Options;
 use rock_parser::profile;
 use rock_parser::profile::buffer::ProfileDecoder;
-use rock_utils::types;
+use rock_parser::profile::Profile;
 use rock_reports::reports;
-use crate::types::Options;
 use rock_utils::errors::RockError;
+use rock_utils::types;
+use std::path::Path;
 
 fn pprof(op: &mut Options) {
     if op.profile_path.is_empty() {

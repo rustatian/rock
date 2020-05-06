@@ -1,8 +1,8 @@
-use crate::profile::buffer::{Buffer, decode_field};
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::Decoder;
+use std::cell::RefCell;
 use std::default::Default;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Function {

@@ -1,8 +1,8 @@
-use crate::profile::buffer::{Buffer, decode_field};
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Describes function and line table debug information.
@@ -62,8 +62,7 @@ impl Decoder<Location> for Location {
                         // repeated Line line = 4
                         4 => {
                             // todo!(why buf copied twice) ?????
-                            loc.line
-                                .push(line::Line::decode(buf, buf.data.clone()));
+                            loc.line.push(line::Line::decode(buf, buf.data.clone()));
                         }
                         5 => {
                             if buf.u64 == 0 {

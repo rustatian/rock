@@ -4,11 +4,11 @@ use std::ops::{Shl, Shr};
 use flate2::read::GzDecoder;
 
 use crate::profile::Profile;
-use std::convert::From;
-use std::string::ToString;
 use rock_utils::errors::RockError;
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::convert::From;
+use std::rc::Rc;
+use std::string::ToString;
 
 // ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {
@@ -46,7 +46,7 @@ pub struct Buffer {
 }
 
 impl ProfileDecoder for Buffer {
-    fn decode(mut data: Vec<u8>) -> Result<Profile, RockError> {
+    fn decode(data: Vec<u8>) -> Result<Profile, RockError> {
         // check is there data gzipped
         // https://tools.ietf.org/html/rfc1952#page-5
         if data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b {
@@ -97,7 +97,7 @@ impl ProfileDecoder for Buffer {
 }
 
 #[inline]
-pub fn decode_message(buf: &mut Buffer, mut data: Rc<RefCell<Vec<u8>>>, profile: &mut Profile) {
+pub fn decode_message(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>, profile: &mut Profile) {
     if buf.r#type != WireTypes::WireBytes {
         panic!("WireTypes not Equal WireBytes");
     }
@@ -122,7 +122,7 @@ pub fn decode_message(buf: &mut Buffer, mut data: Rc<RefCell<Vec<u8>>>, profile:
 // decode_field is used to decode fields from incoming data
 // buf -> buffer with data to allocate
 // data -> unparsed data
-#[inline]clone()
+#[inline]
 pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), RockError> {
     let result = decode_varint(data.clone());
     match result {
@@ -139,7 +139,7 @@ pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), 
             // this is returned type
             match buf.r#type {
                 //0
-                WireTypes::WireVarint => match decode_varint(data.clone()) {
+                WireTypes::WireVarint => match decode_varint(data) {
                     Ok(varint) => {
                         buf.u64 = varint as u64;
                         Ok(())
@@ -226,9 +226,9 @@ pub fn decode_varint(buf: Rc<RefCell<Vec<u8>>>) -> Result<usize, RockError> {
         // 0011101100000000
         // 0011101101010110 = 15190
         u |= (((buf.borrow()[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-        // here we check all 8 bits for MSB
-        // if all bits are zero, we'are done
-        // if not, MSB is set and there is presents next byte to read
+                                                                               // here we check all 8 bits for MSB
+                                                                               // if all bits are zero, we'are done
+                                                                               // if not, MSB is set and there is presents next byte to read
         if buf.borrow()[i] & 0x80 == 0 {
             // drain first i-th number of elements
             buf.borrow_mut().drain(..=i);
@@ -265,7 +265,7 @@ pub fn decode_string(v: &[u8]) -> String {
 #[cfg(test)]
 mod profile_test {
     use std::collections::HashMap;
-    use std::io::{Read};
+    use std::io::Read;
 
     use crate::profile::buffer::ProfileDecoder;
 

@@ -1,7 +1,7 @@
-use crate::profile::buffer::{Buffer, decode_field};
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::{function, Decoder};
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Line {
