@@ -1,5 +1,7 @@
 use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 /// ValueType describes the semantics and measurement units of a value
@@ -19,10 +21,10 @@ pub struct ValueType {
 
 impl Decoder<ValueType> for ValueType {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> ValueType {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> ValueType {
         let mut vt = ValueType::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         //1

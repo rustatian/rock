@@ -7,6 +7,8 @@ use crate::profile::Profile;
 use std::convert::From;
 use std::string::ToString;
 use rock_utils::errors::RockError;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 // ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {
@@ -15,7 +17,7 @@ pub trait ProfileDecoder {
 
 // Constants that identify the encoding of a value on the wire.
 #[repr(u8)]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WireTypes {
     WireVarint = 0,
     WireFixed64 = 1,
@@ -40,7 +42,7 @@ pub struct Buffer {
     pub field: usize,
     pub r#type: WireTypes,
     pub u64: u64,
-    pub data: Vec<u8>,
+    pub data: Rc<RefCell<Vec<u8>>>,
 }
 
 impl ProfileDecoder for Buffer {
@@ -58,11 +60,11 @@ impl ProfileDecoder for Buffer {
                         // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
                         r#type: WireTypes::WireBytes,
                         u64: 0,
-                        data: vec![],
+                        data: Rc::new(RefCell::new(vec![])),
                     };
 
                     let mut p = Profile::default();
-                    decode_message(&mut b, uncompressed.as_mut(), &mut p);
+                    decode_message(&mut b, Rc::new(RefCell::new(uncompressed)), &mut p);
                     p.post_decode();
                     match p.validate() {
                         Ok(_) => Ok(p),
@@ -81,11 +83,11 @@ impl ProfileDecoder for Buffer {
             // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
             r#type: WireTypes::WireBytes,
             u64: 0,
-            data: vec![],
+            data: Rc::new(RefCell::new(vec![])),
         };
         // data not in the buffer, since the data in the buffer used for internal processing
         let mut p = Profile::default();
-        decode_message(&mut b, &mut data, &mut p);
+        decode_message(&mut b, Rc::new(RefCell::new(data)), &mut p);
         p.post_decode();
         match p.validate() {
             Ok(_) => Ok(p),
@@ -95,21 +97,20 @@ impl ProfileDecoder for Buffer {
 }
 
 #[inline]
-pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profile) {
+pub fn decode_message(buf: &mut Buffer, mut data: Rc<RefCell<Vec<u8>>>, profile: &mut Profile) {
     if buf.r#type != WireTypes::WireBytes {
         panic!("WireTypes not Equal WireBytes");
     }
 
-    while !data.is_empty() {
+    while !data.borrow().is_empty() {
         // here we decode data, the algorithm is following:
         // 1. We pass whole data and buffer to the decode_field function
         // 2. As the result we get main data (which drained to the buffer size) and buffer with that drained data filled with other fields
         // 3. We also calculate field, type and u64 fields to pass it to Profile::decode_profile function
-        let res = decode_field(buf, data);
+        let res = decode_field(buf, data.clone());
         match res {
             Ok(()) => {
-                let mut data = buf.data.clone();
-                Profile::decode_profile_field(profile, buf, &mut data);
+                Profile::decode_profile_field(profile, buf, buf.data.clone());
             }
             Err(err) => {
                 panic!(err);
@@ -121,9 +122,9 @@ pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profil
 // decode_field is used to decode fields from incoming data
 // buf -> buffer with data to allocate
 // data -> unparsed data
-#[inline]
-pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockError> {
-    let result = decode_varint(data);
+#[inline]clone()
+pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), RockError> {
+    let result = decode_varint(data.clone());
     match result {
         Ok(varint) => {
             // decode
@@ -133,12 +134,12 @@ pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockErro
             buf.field = varint.shr(3);
             buf.r#type = WireTypes::from(varint & 7);
             buf.u64 = 0;
-            buf.data = Vec::new();
+            buf.data = Rc::new(RefCell::new(vec![]));
 
             // this is returned type
             match buf.r#type {
                 //0
-                WireTypes::WireVarint => match decode_varint(data) {
+                WireTypes::WireVarint => match decode_varint(data.clone()) {
                     Ok(varint) => {
                         buf.u64 = varint as u64;
                         Ok(())
@@ -147,28 +148,28 @@ pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockErro
                 },
                 //1
                 WireTypes::WireFixed64 => {
-                    if data.len() < 8 {
+                    if data.borrow().len() < 8 {
                         return Err(RockError::DecodeFieldFailed {
                             reason: "data len less than 8 bytes".to_string(),
                         });
                     }
-                    buf.u64 = decode_fixed64(&data[..8]);
+                    buf.u64 = decode_fixed64(&data.borrow_mut()[..8]);
                     // drain first 8 elements
-                    data.drain(..8);
+                    data.borrow_mut().drain(..8);
                     Ok(())
                 }
                 //2
                 WireTypes::WireBytes => {
-                    match decode_varint(data) {
+                    match decode_varint(data.clone()) {
                         Ok(varint) => {
-                            if varint > data.len() {
+                            if varint > data.borrow().len() {
                                 return Err(RockError::DecodeFieldFailed {
                                     reason: "too much data".to_string(),
                                 });
                             }
-                            buf.data = data[..varint].to_owned();
+                            buf.data = Rc::new(RefCell::new(data.borrow_mut()[..varint].into()));
                             // draint vec, start index removing decoded data
-                            data.drain(..varint);
+                            data.borrow_mut().drain(..varint);
                             Ok(())
                         }
                         Err(err) => Err(err),
@@ -177,13 +178,13 @@ pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockErro
 
                 //5
                 WireTypes::WireFixed32 => {
-                    if data.len() < 4 {
+                    if data.borrow().len() < 4 {
                         return Err(RockError::DecodeFieldFailed {
                             reason: "data len less than 8 bytes".to_string(),
                         });
                     }
-                    buf.u64 = decode_fixed32(&data[..4]) as u64;
-                    data.drain(..4);
+                    buf.u64 = decode_fixed32(&data.borrow()[..4]) as u64;
+                    data.borrow_mut().drain(..4);
                     Ok(())
                 }
             }
@@ -199,13 +200,13 @@ pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockErro
 /// &[u8] --> subslice of incoming data w/o the decoded varint
 /// todo!(https://github.com/golang/protobuf/commit/5d356b9d1c22e345c2ea08432302e82fd02d8a61);
 #[inline(always)]
-pub fn decode_varint(buf: &mut Vec<u8>) -> Result<usize, RockError> {
+pub fn decode_varint(buf: Rc<RefCell<Vec<u8>>>) -> Result<usize, RockError> {
     let mut u: usize = 0;
     let mut i: usize = 0;
 
     loop {
         // Message should be no more than 10 bytes
-        if i >= 10 || i >= buf.len() {
+        if i >= 10 || i >= buf.borrow().len() {
             return Err(RockError::DecodeFieldFailed {
                 reason: "bad varint".to_string(),
             });
@@ -224,13 +225,13 @@ pub fn decode_varint(buf: &mut Vec<u8>) -> Result<usize, RockError> {
         //         01010110         OR
         // 0011101100000000
         // 0011101101010110 = 15190
-        u |= (((buf[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
+        u |= (((buf.borrow()[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
         // here we check all 8 bits for MSB
         // if all bits are zero, we'are done
         // if not, MSB is set and there is presents next byte to read
-        if buf[i] & 0x80 == 0 {
+        if buf.borrow()[i] & 0x80 == 0 {
             // drain first i-th number of elements
-            buf.drain(..=i);
+            buf.borrow_mut().drain(..=i);
             return Ok(u);
         }
         i += 1;

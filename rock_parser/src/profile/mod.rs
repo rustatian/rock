@@ -1,10 +1,13 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
+
 use crate::profile::buffer::{decode_string, Buffer, WireTypes, decode_varint};
 use chrono::NaiveDateTime;
-use std::borrow::Borrow;
+use std::borrow::{Borrow};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use rock_utils::errors::RockError;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 pub mod buffer;
 mod function;
@@ -18,7 +21,7 @@ mod value_type;
 const NSEC_IN_SECOND: i64 = 1_000_000_000;
 
 pub trait Decoder<T> {
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> T;
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> T;
 }
 
 // TODO ADD OPTIONAL TO THE STRUCT FIELDS
@@ -167,7 +170,7 @@ impl ToString for Profile {
 
 impl Profile {
     #[inline]
-    pub fn decode_profile_field(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
+    pub fn decode_profile_field(&mut self, buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) {
         match buf.field {
             // repeated ValueType sample_type = 1
             1 => {
@@ -192,7 +195,7 @@ impl Profile {
             }
             // repeated string string_table = 6
             6 => {
-                self.string_table.push(decode_string(data));
+                self.string_table.push(decode_string(data.borrow_mut().as_ref()));
                 if self.string_table[0] != "" {
                     panic!("String table[0] should be empty");
                 }
@@ -228,8 +231,8 @@ impl Profile {
             // repeated int64 comment = 13
             13 => match buf.r#type {
                 WireTypes::WireBytes => loop {
-                    if !data.is_empty() {
-                        let res = decode_varint(data);
+                    if !data.borrow_mut().is_empty() {
+                        let res = decode_varint(data.clone());
                         match res {
                             Ok(varint) => self.comment_index.push(varint as i64),
                             Err(err) => {
@@ -520,7 +523,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(

@@ -1,6 +1,8 @@
 use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Describes function and line table debug information.
@@ -39,10 +41,10 @@ pub struct Location {
 
 impl Decoder<Location> for Location {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Location {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Location {
         let mut loc = Location::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         // optional uint64 function_id = 1
@@ -61,7 +63,7 @@ impl Decoder<Location> for Location {
                         4 => {
                             // todo!(why buf copied twice) ?????
                             loc.line
-                                .push(line::Line::decode(buf, &mut buf.data.clone()));
+                                .push(line::Line::decode(buf, buf.data.clone()));
                         }
                         5 => {
                             if buf.u64 == 0 {

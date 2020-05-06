@@ -1,5 +1,7 @@
 use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::{function, Decoder};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Line {
@@ -14,10 +16,10 @@ pub struct Line {
 
 impl Decoder<Line> for Line {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Line {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Line {
         let mut line = Line::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         // optional uint64 function_id = 1

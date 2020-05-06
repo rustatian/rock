@@ -1,6 +1,8 @@
 use crate::profile::buffer::{Buffer, WireTypes, decode_varint, decode_field};
 use crate::profile::{label, location, Decoder};
 use std::collections::HashMap;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Each Sample records values encountered in some program
@@ -34,10 +36,10 @@ pub struct Sample {
 
 impl Decoder<Sample> for Sample {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Sample {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Sample {
         let mut s = Sample::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         //1
@@ -45,8 +47,8 @@ impl Decoder<Sample> for Sample {
                             let mut d = buf.data.clone();
                             match buf.r#type {
                                 WireTypes::WireBytes => {
-                                    while !d.is_empty() {
-                                        match decode_varint(&mut d) {
+                                    while !d.borrow().is_empty() {
+                                        match decode_varint(d.clone()) {
                                             Ok(varint) => s.location_index.push(varint as u64),
                                             Err(err) => {
                                                 panic!(err);
@@ -69,8 +71,8 @@ impl Decoder<Sample> for Sample {
                             let mut d = buf.data.clone();
                             match buf.r#type {
                                 WireTypes::WireBytes => {
-                                    while !d.is_empty() {
-                                        match decode_varint(&mut d) {
+                                    while !d.borrow().is_empty() {
+                                        match decode_varint(d.clone()) {
                                             Ok(varint) => s.value.push(varint as i64),
                                             Err(err) => {
                                                 panic!(err);
@@ -90,7 +92,7 @@ impl Decoder<Sample> for Sample {
                         //3
                         3 => {
                             s.label_index
-                                .push(label::Label::decode(buf, &mut buf.data.clone()));
+                                .push(label::Label::decode(buf, buf.data.clone()));
                         }
                         _ => {
                             panic!("Unknown sample type");

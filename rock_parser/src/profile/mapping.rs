@@ -1,6 +1,8 @@
 use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
 use std::default::Default;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 // TMP
 // mapping corresponds to Profile.Mapping
@@ -38,10 +40,10 @@ pub struct Mapping {
 
 impl Decoder<Mapping> for Mapping {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Mapping {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Mapping {
         let mut mapping = Mapping::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         //1

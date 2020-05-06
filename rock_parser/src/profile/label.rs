@@ -1,5 +1,7 @@
 use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Label {
@@ -22,10 +24,10 @@ pub struct Label {
 
 impl Decoder<Label> for Label {
     #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Label {
+    fn decode(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Label {
         let mut lb = Label::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
+        while !data.borrow().is_empty() {
+            match decode_field(buf, data.clone()) {
                 Ok(()) => {
                     match buf.field {
                         //1
