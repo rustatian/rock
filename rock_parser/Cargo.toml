@@ -24,3 +24,14 @@ mimalloc_rs = { git = "https://github.com/48d90782/mimalloc_rs", branch = "maste
 [dev-dependencies]
 criterion = "0.3.2"
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+debug = false
+debug-assertions = false
+overflow-checks = false
+panic = 'unwind'
+incremental = false
+rpath = false
+codegen-units = 1
+
