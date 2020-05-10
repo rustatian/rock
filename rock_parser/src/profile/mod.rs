@@ -1,5 +1,3 @@
-#![warn(missing_debug_implementations, rust_2018_idioms)]
-
 use crate::profile::buffer::{decode_string, decode_varint, Buffer, WireTypes};
 use chrono::NaiveDateTime;
 use rock_utils::errors::RockError;
