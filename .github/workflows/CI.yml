@@ -87,11 +87,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: bench
-          args: --manifest-path Cargo.toml
+          args: --manifest-path rock_parser/Cargo.toml
 
 
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path Cargo.toml
+          args: --all

@@ -28,7 +28,7 @@ fn pprof(op: &mut Options) {
 
 fn load_binary(path: &str) -> Result<Profile, RockError> {
     match std::fs::read(path) {
-        Ok(data) => match profile::buffer::Buffer::decode(data) {
+        Ok(ref mut data) => match profile::buffer::Buffer::decode(data) {
             Ok(res) => Ok(res),
             Err(err) => Err(err),
         },

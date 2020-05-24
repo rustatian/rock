@@ -5,14 +5,12 @@ use flate2::read::GzDecoder;
 
 use crate::profile::Profile;
 use rock_utils::errors::RockError;
-use std::cell::RefCell;
 use std::convert::From;
-use std::rc::Rc;
 use std::string::ToString;
 
 // ProfileDecoder is a main trait to decode the profile
 pub trait ProfileDecoder {
-    fn decode(data: Vec<u8>) -> Result<Profile, RockError>;
+    fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError>;
 }
 
 // Constants that identify the encoding of a value on the wire.
@@ -42,11 +40,11 @@ pub struct Buffer {
     pub field: usize,
     pub r#type: WireTypes,
     pub u64: u64,
-    pub data: Rc<RefCell<Vec<u8>>>,
+    //pub data: Rc<RefCell<Vec<u8>>>,
 }
 
 impl ProfileDecoder for Buffer {
-    fn decode(data: Vec<u8>) -> Result<Profile, RockError> {
+    fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError> {
         // check is there data gzipped
         // https://tools.ietf.org/html/rfc1952#page-5
         if data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b {
@@ -60,11 +58,11 @@ impl ProfileDecoder for Buffer {
                         // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
                         r#type: WireTypes::WireBytes,
                         u64: 0,
-                        data: Rc::new(RefCell::new(vec![])),
+                        //data: Rc::new(RefCell::new(vec![])),
                     };
 
                     let mut p = Profile::default();
-                    decode_message(&mut b, Rc::new(RefCell::new(uncompressed)), &mut p);
+                    decode_message(&mut b, &mut uncompressed, &mut p);
                     p.post_decode();
                     match p.validate() {
                         Ok(_) => Ok(p),
@@ -83,11 +81,11 @@ impl ProfileDecoder for Buffer {
             // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
             r#type: WireTypes::WireBytes,
             u64: 0,
-            data: Rc::new(RefCell::new(vec![])),
+            //data: Rc::new(RefCell::new(vec![])),
         };
         // data not in the buffer, since the data in the buffer used for internal processing
         let mut p = Profile::default();
-        decode_message(&mut b, Rc::new(RefCell::new(data)), &mut p);
+        decode_message(&mut b, data, &mut p);
         p.post_decode();
         match p.validate() {
             Ok(_) => Ok(p),
@@ -97,20 +95,22 @@ impl ProfileDecoder for Buffer {
 }
 
 #[inline]
-pub fn decode_message(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>, profile: &mut Profile) {
+pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profile) {
     if buf.r#type != WireTypes::WireBytes {
         panic!("WireTypes not Equal WireBytes");
     }
 
-    while !data.borrow().is_empty() {
+    while !data.is_empty() {
         // here we decode data, the algorithm is following:
         // 1. We pass whole data and buffer to the decode_field function
         // 2. As the result we get main data (which drained to the buffer size) and buffer with that drained data filled with other fields
         // 3. We also calculate field, type and u64 fields to pass it to Profile::decode_profile function
-        let res = decode_field(buf, data.clone());
+        let mut res = decode_field(buf, data);
         match res {
-            Ok(()) => {
-                Profile::decode_profile_field(profile, buf, buf.data.clone());
+            Ok(ref mut buf_data) => {
+                // buf.data.clone()
+                // buf.data.clone()
+                Profile::decode_profile_field(profile, buf, buf_data);
             }
             Err(err) => {
                 panic!(err);
@@ -123,8 +123,9 @@ pub fn decode_message(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>, profile: &mu
 // buf -> buffer with data to allocate
 // data -> unparsed data
 #[inline]
-pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), RockError> {
-    let result = decode_varint(data.clone());
+#[allow(unused_assignments)]
+pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<Vec<u8>, RockError> {
+    let result = decode_varint(data);
     match result {
         Ok(varint) => {
             // decode
@@ -134,7 +135,8 @@ pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), 
             buf.field = varint.shr(3);
             buf.r#type = WireTypes::from(varint & 7);
             buf.u64 = 0;
-            buf.data = Rc::new(RefCell::new(vec![]));
+
+            let mut buf_data = vec![];
 
             // this is returned type
             match buf.r#type {
@@ -142,35 +144,36 @@ pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), 
                 WireTypes::WireVarint => match decode_varint(data) {
                     Ok(varint) => {
                         buf.u64 = varint as u64;
-                        Ok(())
+                        Ok(vec![])
                     }
                     Err(err) => Err(err),
                 },
                 //1
                 WireTypes::WireFixed64 => {
-                    if data.borrow().len() < 8 {
+                    if data.len() < 8 {
                         return Err(RockError::DecodeFieldFailed {
                             reason: "data len less than 8 bytes".to_string(),
                         });
                     }
-                    buf.u64 = decode_fixed64(&data.borrow_mut()[..8]);
+                    buf.u64 = decode_fixed64(&data[..8]);
                     // drain first 8 elements
-                    data.borrow_mut().drain(..8);
-                    Ok(())
+                    data.drain(..8);
+                    Ok(vec![])
                 }
                 //2
                 WireTypes::WireBytes => {
-                    match decode_varint(data.clone()) {
+                    match decode_varint(data) {
                         Ok(varint) => {
-                            if varint > data.borrow().len() {
+                            if varint > data.len() {
                                 return Err(RockError::DecodeFieldFailed {
                                     reason: "too much data".to_string(),
                                 });
                             }
-                            buf.data = Rc::new(RefCell::new(data.borrow_mut()[..varint].into()));
+                            // buf.data = Rc::new(RefCell::new(data.borrow_mut()[..varint].into()));
+                            buf_data = data[..varint].into();
                             // draint vec, start index removing decoded data
-                            data.borrow_mut().drain(..varint);
-                            Ok(())
+                            data.drain(..varint);
+                            Ok(buf_data)
                         }
                         Err(err) => Err(err),
                     }
@@ -178,14 +181,14 @@ pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), 
 
                 //5
                 WireTypes::WireFixed32 => {
-                    if data.borrow().len() < 4 {
+                    if data.len() < 4 {
                         return Err(RockError::DecodeFieldFailed {
                             reason: "data len less than 8 bytes".to_string(),
                         });
                     }
-                    buf.u64 = decode_fixed32(&data.borrow()[..4]) as u64;
-                    data.borrow_mut().drain(..4);
-                    Ok(())
+                    buf.u64 = decode_fixed32(&data[..4]) as u64;
+                    data.drain(..4);
+                    Ok(vec![])
                 }
             }
         }
@@ -200,13 +203,13 @@ pub fn decode_field(buf: &mut Buffer, data: Rc<RefCell<Vec<u8>>>) -> Result<(), 
 /// &[u8] --> subslice of incoming data w/o the decoded varint
 /// todo!(https://github.com/golang/protobuf/commit/5d356b9d1c22e345c2ea08432302e82fd02d8a61);
 #[inline(always)]
-pub fn decode_varint(buf: Rc<RefCell<Vec<u8>>>) -> Result<usize, RockError> {
+pub fn decode_varint(data: &mut Vec<u8>) -> Result<usize, RockError> {
     let mut u: usize = 0;
     let mut i: usize = 0;
 
     loop {
         // Message should be no more than 10 bytes
-        if i >= 10 || i >= buf.borrow().len() {
+        if i >= 10 || i >= data.len() {
             return Err(RockError::DecodeFieldFailed {
                 reason: "bad varint".to_string(),
             });
@@ -225,13 +228,13 @@ pub fn decode_varint(buf: Rc<RefCell<Vec<u8>>>) -> Result<usize, RockError> {
         //         01010110         OR
         // 0011101100000000
         // 0011101101010110 = 15190
-        u |= (((buf.borrow()[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-                                                                               // here we check all 8 bits for MSB
-                                                                               // if all bits are zero, we'are done
-                                                                               // if not, MSB is set and there is presents next byte to read
-        if buf.borrow()[i] & 0x80 == 0 {
+        u |= (((data[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
+                                                                       // here we check all 8 bits for MSB
+                                                                       // if all bits are zero, we'are done
+                                                                       // if not, MSB is set and there is presents next byte to read
+        if data[i] & 0x80 == 0 {
             // drain first i-th number of elements
-            buf.borrow_mut().drain(..=i);
+            data.drain(..=i);
             return Ok(u);
         }
         i += 1;
@@ -300,7 +303,7 @@ mod profile_test {
                 Ok(mut file) => {
                     let mut buffer = vec![];
                     let _ = file.read_to_end(&mut buffer);
-                    let r = super::Buffer::decode(buffer);
+                    let r = super::Buffer::decode(&mut buffer);
                     match r {
                         Ok(b) => {
                             assert_eq!(b.to_string().trim_end().eq(&golden_file), true);

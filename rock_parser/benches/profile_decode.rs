@@ -10,7 +10,7 @@ pub fn profile_bench_cpu(c: &mut Criterion) {
             let mut buffer = vec![];
             let _ = file.read_to_end(&mut buffer);
             c.bench_function("profile_bench_cpu", |b| {
-                b.iter(|| Buffer::decode(black_box(buffer.clone())))
+                b.iter(|| Buffer::decode(black_box(buffer.as_mut())))
             });
         }
         Err(err) => panic!(err),
@@ -24,7 +24,7 @@ pub fn profile_bench_heap(c: &mut Criterion) {
             let mut buffer = vec![];
             let _ = file.read_to_end(&mut buffer);
             c.bench_function("profile_bench_heap", |b| {
-                b.iter(|| Buffer::decode(black_box(buffer.clone())))
+                b.iter(|| Buffer::decode(black_box(buffer.as_mut())))
             });
         }
         Err(err) => panic!(err),
@@ -38,7 +38,7 @@ pub fn profile_bench_encoded(c: &mut Criterion) {
             let mut buffer = vec![];
             let _ = file.read_to_end(&mut buffer);
             c.bench_function("profile_bench_encoded", |b| {
-                b.iter(|| Buffer::decode(black_box(buffer.clone())))
+                b.iter(|| Buffer::decode(black_box(buffer.as_mut())))
             });
         }
         Err(err) => panic!(err),
@@ -52,7 +52,7 @@ pub fn profile_bench_big_1min_13025_lines(c: &mut Criterion) {
             let mut buffer = vec![];
             let _ = file.read_to_end(&mut buffer);
             c.bench_function("profile_bench_big_1min_13025_lines", |b| {
-                b.iter(|| Buffer::decode(black_box(buffer.clone())))
+                b.iter(|| Buffer::decode(black_box(buffer.as_mut())))
             });
         }
         Err(err) => panic!(err),
