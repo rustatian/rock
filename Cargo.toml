@@ -22,8 +22,6 @@ members = [
 ]
 
 [dependencies]
-#actix-web = "2"
-#actix-rt = "1.1.1"
 chrono = "0.4.11"
 flate2 = "1.0.14"
 nom = "5.1"
