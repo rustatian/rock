@@ -40,7 +40,6 @@ pub struct Buffer {
     pub field: usize,
     pub r#type: WireTypes,
     pub u64: u64,
-    //pub data: Rc<RefCell<Vec<u8>>>,
 }
 
 impl ProfileDecoder for Buffer {
@@ -58,7 +57,6 @@ impl ProfileDecoder for Buffer {
                         // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
                         r#type: WireTypes::WireBytes,
                         u64: 0,
-                        //data: Rc::new(RefCell::new(vec![])),
                     };
 
                     let mut p = Profile::default();
@@ -81,7 +79,6 @@ impl ProfileDecoder for Buffer {
             // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
             r#type: WireTypes::WireBytes,
             u64: 0,
-            //data: Rc::new(RefCell::new(vec![])),
         };
         // data not in the buffer, since the data in the buffer used for internal processing
         let mut p = Profile::default();
