@@ -19,7 +19,7 @@ harness = false
 rock_utils = {path = "../rock_utils"}
 flate2 = "1.0.14"
 chrono = "0.4.11"
-mimalloc_rs = { git = "https://github.com/48d90782/mimalloc_rs", branch = "master", default-features = false }
+mimalloc_rs = { git = "https://github.com/48d90782/mi-malloc_rust", branch = "master", default-features = false }
 
 [dev-dependencies]
 criterion = "0.3.2"

@@ -105,8 +105,6 @@ pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profil
         let mut res = decode_field(buf, data);
         match res {
             Ok(ref mut buf_data) => {
-                // buf.data.clone()
-                // buf.data.clone()
                 Profile::decode_profile_field(profile, buf, buf_data);
             }
             Err(err) => {
