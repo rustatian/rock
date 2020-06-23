@@ -46,31 +46,11 @@ impl ProfileDecoder for Buffer {
     fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError> {
         // check is there data gzipped
         // https://tools.ietf.org/html/rfc1952#page-5
-        if data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b {
-            let mut uncompressed = vec![];
-            let mut gz_decoder = GzDecoder::new(BufReader::new(data.as_slice()));
-            let res = gz_decoder.read_to_end(&mut uncompressed);
-            return match res {
-                Ok(_) => {
-                    let mut b = Buffer {
-                        field: 0,
-                        // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
-                        r#type: WireTypes::WireBytes,
-                        u64: 0,
-                    };
-
-                    let mut p = Profile::default();
-                    decode_message(&mut b, &mut uncompressed, &mut p);
-                    p.post_decode();
-                    match p.validate() {
-                        Ok(_) => Ok(p),
-                        Err(err) => panic!(err),
-                    }
-                }
-                Err(err) => Err(RockError::ProfileUncompressFailed {
-                    reason: err.to_string(),
-                }),
-            };
+        let is_data_gzipped = data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b;
+        if is_data_gzipped {
+            *data = uncompress_gzip(&data).map_err(|e| RockError::ProfileUncompressFailed {
+                reason: e.to_string(),
+            })?;
         }
 
         // data is not compressed, just copy to struct
@@ -89,6 +69,14 @@ impl ProfileDecoder for Buffer {
             Err(err) => panic!(err),
         }
     }
+}
+
+fn uncompress_gzip(data: &[u8]) -> std::io::Result<Vec<u8>> {
+    let reader = BufReader::new(data);
+    let mut gz_decoder = GzDecoder::new(reader);
+    let mut uncompressed = vec![];
+    gz_decoder.read_to_end(&mut uncompressed)?;
+    Ok(uncompressed)
 }
 
 #[inline]
