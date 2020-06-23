@@ -45,16 +45,7 @@ pub struct Buffer {
 
 impl ProfileDecoder for Buffer {
     fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError> {
-        // check is there data gzipped
-        // https://tools.ietf.org/html/rfc1952#page-5
-        let is_data_gzipped = data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b;
-        if is_data_gzipped {
-            *data = uncompress_gzip(&data).map_err(|e| RockError::ProfileUncompressFailed {
-                reason: e.to_string(),
-            })?;
-        }
-
-        // data is not compressed, just copy to struct
+        let mut p = Profile::default();
         let mut b = Buffer {
             field: 0,
             // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
@@ -62,9 +53,21 @@ impl ProfileDecoder for Buffer {
             u64: 0,
             data: None,
         };
+        
+        // check is there data gzipped
+        // https://tools.ietf.org/html/rfc1952#page-5
+        let is_data_gzipped = data.len() > 2 && data[0] == 0x1f && data[1] == 0x8b;
+        if is_data_gzipped {
+            let mut data = uncompress_gzip(&data).map_err(|e| RockError::ProfileUncompressFailed {
+                reason: e.to_string(),
+            })?;
+
+            decode_message(&mut b, &mut data, &mut p);
+        } else {
+            decode_message(&mut b, data, &mut p);
+        }
+
         // data not in the buffer, since the data in the buffer used for internal processing
-        let mut p = Profile::default();
-        decode_message(&mut b, data, &mut p);
         p.post_decode();
         match p.validate() {
             Ok(_) => Ok(p),
