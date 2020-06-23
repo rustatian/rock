@@ -40,6 +40,7 @@ pub struct Buffer {
     pub field: usize,
     pub r#type: WireTypes,
     pub u64: u64,
+    pub data: Option<Vec<u8>>,
 }
 
 impl ProfileDecoder for Buffer {
@@ -59,6 +60,7 @@ impl ProfileDecoder for Buffer {
             // 2 Length-delimited -> string, bytes, embedded messages, packed repeated fields
             r#type: WireTypes::WireBytes,
             u64: 0,
+            data: None,
         };
         // data not in the buffer, since the data in the buffer used for internal processing
         let mut p = Profile::default();
@@ -90,10 +92,9 @@ pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profil
         // 1. We pass whole data and buffer to the decode_field function
         // 2. As the result we get main data (which drained to the buffer size) and buffer with that drained data filled with other fields
         // 3. We also calculate field, type and u64 fields to pass it to Profile::decode_profile function
-        let mut res = decode_field(buf, data);
-        match res {
-            Ok(ref mut buf_data) => {
-                Profile::decode_profile_field(profile, buf, buf_data);
+        match decode_field(buf, data) {
+            Ok(()) => {
+                Profile::decode_profile_field(profile, buf);
             }
             Err(err) => {
                 panic!(err);
@@ -107,78 +108,61 @@ pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profil
 // data -> unparsed data
 #[inline]
 #[allow(unused_assignments)]
-pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<Vec<u8>, RockError> {
-    let result = decode_varint(data);
-    match result {
-        Ok(varint) => {
-            // decode
-            // 90 -> 1011010
-            // after right shift -> 1011, this is field number in proto
-            // then we're doing AND operation and getting 7 bits
-            buf.field = varint.shr(3);
-            buf.r#type = WireTypes::from(varint & 7);
-            buf.u64 = 0;
+pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<(), RockError> {
+    let varint = decode_varint(data)?;
 
-            let mut buf_data = vec![];
+    // decode
+    // 90 -> 1011010
+    // after right shift -> 1011, this is field number in proto
+    // then we're doing AND operation and getting 7 bits
+    buf.field = varint.shr(3);
+    buf.r#type = WireTypes::from(varint & 7);
+    buf.u64 = 0;
 
-            // this is returned type
-            match buf.r#type {
-                //0
-                WireTypes::WireVarint => match decode_varint(data) {
-                    Ok(varint) => {
-                        buf.u64 = varint as u64;
-                        Ok(vec![])
-                    }
-                    Err(err) => Err(err),
-                },
-                //1
-                WireTypes::WireFixed64 => {
-                    if data.len() < 8 {
-                        return Err(RockError::DecodeFieldFailed {
-                            reason: "data len less than 8 bytes".to_string(),
-                        });
-                    }
-                    buf.u64 = decode_fixed64(&data[..8]);
-                    // drain first 8 elements
-                    data.drain(..8);
-                    Ok(vec![])
-                }
-                //2
-                WireTypes::WireBytes => {
-                    match decode_varint(data) {
-                        Ok(varint) => {
-                            if varint > data.len() {
-                                return Err(RockError::DecodeFieldFailed {
-                                    reason: "too much data".to_string(),
-                                });
-                            }
-                            // buf.data = Rc::new(RefCell::new(data.borrow_mut()[..varint].into()));
-                            buf_data = data[..varint].into();
-                            // draint vec, start index removing decoded data
-                            data.drain(..varint);
-                            Ok(buf_data)
-                        }
-                        Err(err) => Err(err),
-                    }
-                }
-
-                //5
-                WireTypes::WireFixed32 => {
-                    if data.len() < 4 {
-                        return Err(RockError::DecodeFieldFailed {
-                            reason: "data len less than 8 bytes".to_string(),
-                        });
-                    }
-                    buf.u64 = decode_fixed32(&data[..4]) as u64;
-                    data.drain(..4);
-                    Ok(vec![])
-                }
-            }
+    // this is returned type
+    match buf.r#type {
+        //0
+        WireTypes::WireVarint => {
+            let variant = decode_varint(data)?;
+            buf.u64 = variant as u64;
         }
-        Err(err) => {
-            panic!(err);
+        //1
+        WireTypes::WireFixed64 => {
+            if data.len() < 8 {
+                return Err(RockError::DecodeFieldFailed {
+                    reason: "data len less than 8 bytes".to_string(),
+                });
+            }
+            buf.u64 = decode_fixed64(&data[..8]);
+            // drain first 8 elements
+            data.drain(..8);
+        }
+        //2
+        WireTypes::WireBytes => {
+            let varint = decode_varint(data)?;
+            if varint > data.len() {
+                return Err(RockError::DecodeFieldFailed {
+                    reason: "too much data".to_string(),
+                });
+            }
+            // buf.data = Rc::new(RefCell::new(data.borrow_mut()[..varint].into()));
+            buf.data = Some(data[..varint].to_vec());
+            // draint vec, start index removing decoded data
+            data.drain(..varint);
+        }
+        //5
+        WireTypes::WireFixed32 => {
+            if data.len() < 4 {
+                return Err(RockError::DecodeFieldFailed {
+                    reason: "data len less than 8 bytes".to_string(),
+                });
+            }
+            buf.u64 = decode_fixed32(&data[..4]) as u64;
+            data.drain(..4);
         }
     }
+
+    Ok(())
 }
 
 /// return parameters:
