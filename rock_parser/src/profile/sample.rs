@@ -1,4 +1,4 @@
-use crate::profile::buffer::{decode_field, decode_varint, Buffer, WireTypes};
+use crate::profile::buffer::{decode_varint, Buffer, WireTypes};
 use crate::profile::{label, location, Decoder};
 use std::collections::HashMap;
 
@@ -33,69 +33,58 @@ pub struct Sample {
 }
 
 impl Decoder<Sample> for Sample {
-    #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Sample {
-        let mut s = Sample::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
-                Ok(ref mut buf_data) => {
-                    match buf.field {
-                        //1
-                        1 => match buf.r#type {
-                            WireTypes::WireBytes => {
-                                while !buf_data.is_empty() {
-                                    match decode_varint(buf_data) {
-                                        Ok(varint) => s.location_index.push(varint as u64),
-                                        Err(err) => {
-                                            panic!(err);
-                                        }
-                                    }
-                                }
-                            }
-
-                            _ => {
-                                if buf.r#type != WireTypes::WireVarint {
-                                    panic!("value is not varint type");
-                                }
-
-                                s.location_index.push(buf.u64);
+    fn fill(buf: &mut Buffer, s: &mut Sample) {
+        match buf.field {
+            //1
+            1 => match buf.r#type {
+                WireTypes::WireBytes => loop {
+                    match buf.data {
+                        Some(ref mut data) if !data.is_empty() => match decode_varint(data) {
+                            Ok(varint) => s.location_index.push(varint as u64),
+                            Err(err) => {
+                                panic!(err);
                             }
                         },
-                        //2
-                        2 => match buf.r#type {
-                            WireTypes::WireBytes => {
-                                while !buf_data.is_empty() {
-                                    match decode_varint(buf_data) {
-                                        Ok(varint) => s.value.push(varint as i64),
-                                        Err(err) => {
-                                            panic!(err);
-                                        }
-                                    }
-                                }
-                            }
-                            _ => {
-                                if buf.r#type != WireTypes::WireVarint {
-                                    panic!("value is not varint type");
-                                }
-
-                                s.value.push(buf.u64 as i64);
-                            }
-                        },
-                        //3
-                        3 => {
-                            s.label_index.push(label::Label::decode(buf, buf_data));
-                        }
-                        _ => {
-                            panic!("Unknown sample type");
-                        }
+                        _ => break,
                     }
+                },
+                _ => {
+                    if buf.r#type != WireTypes::WireVarint {
+                        panic!("value is not varint type");
+                    }
+
+                    s.location_index.push(buf.u64);
                 }
-                Err(err) => {
-                    panic!(err);
+            },
+            //2
+            2 => match buf.r#type {
+                WireTypes::WireBytes => loop {
+                    match buf.data {
+                        Some(ref mut data) if !data.is_empty() => match decode_varint(data) {
+                            Ok(varint) => s.value.push(varint as i64),
+                            Err(err) => {
+                                panic!(err);
+                            }
+                        },
+                        _ => break,
+                    }
+                },
+                _ => {
+                    if buf.r#type != WireTypes::WireVarint {
+                        panic!("value is not varint type");
+                    }
+
+                    s.value.push(buf.u64 as i64);
                 }
+            },
+            //3
+            3 => {
+                s.label_index.push(label::Label::decode(buf));
+            }
+            _ => {
+                panic!("Unknown sample type");
             }
         }
-        s
     }
 }
 

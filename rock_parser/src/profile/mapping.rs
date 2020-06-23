@@ -1,4 +1,4 @@
-use crate::profile::buffer::{decode_field, Buffer};
+use crate::profile::buffer::{Buffer};
 use crate::profile::Decoder;
 use std::default::Default;
 
@@ -37,77 +37,65 @@ pub struct Mapping {
 }
 
 impl Decoder<Mapping> for Mapping {
-    #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Mapping {
-        let mut mapping = Mapping::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
-                Ok(_) => {
-                    match buf.field {
-                        //1
-                        1 => {
-                            mapping.id = buf.u64;
-                        }
-                        //2
-                        2 => {
-                            mapping.memory_start = buf.u64;
-                        }
-                        //3
-                        3 => {
-                            mapping.memory_limit = buf.u64;
-                        }
-                        //4
-                        4 => {
-                            mapping.memory_offset = buf.u64;
-                        }
-                        //5
-                        5 => {
-                            mapping.filename_index = buf.u64 as i64;
-                        }
-                        //6
-                        6 => {
-                            mapping.build_id_index = buf.u64 as i64;
-                        }
-                        //7
-                        7 => {
-                            if buf.u64 == 0 {
-                                mapping.has_function = false;
-                            } else {
-                                mapping.has_function = true;
-                            }
-                        }
-                        //8
-                        8 => match buf.u64 {
-                            0 => mapping.has_filenames = false,
-                            _ => mapping.has_filenames = true,
-                        },
-                        //9
-                        9 => {
-                            if buf.u64 == 0 {
-                                mapping.has_line_numbers = false;
-                            } else {
-                                mapping.has_line_numbers = true;
-                            }
-                        }
-                        //10
-                        10 => {
-                            if buf.u64 == 0 {
-                                mapping.has_inline_frames = false;
-                            } else {
-                                mapping.has_inline_frames = true;
-                            }
-                        }
-                        _ => {
-                            panic!("Unknown mapping type");
-                        }
-                    }
-                }
-                Err(err) => {
-                    panic!(err);
+    fn fill(buf: &mut Buffer, mapping: &mut Mapping) {
+        match buf.field {
+            //1
+            1 => {
+                mapping.id = buf.u64;
+            }
+            //2
+            2 => {
+                mapping.memory_start = buf.u64;
+            }
+            //3
+            3 => {
+                mapping.memory_limit = buf.u64;
+            }
+            //4
+            4 => {
+                mapping.memory_offset = buf.u64;
+            }
+            //5
+            5 => {
+                mapping.filename_index = buf.u64 as i64;
+            }
+            //6
+            6 => {
+                mapping.build_id_index = buf.u64 as i64;
+            }
+            //7
+            7 => {
+                if buf.u64 == 0 {
+                    mapping.has_function = false;
+                } else {
+                    mapping.has_function = true;
                 }
             }
+            //8
+            8 => match buf.u64 {
+                0 => mapping.has_filenames = false,
+                _ => mapping.has_filenames = true,
+            },
+            //9
+            9 => {
+                if buf.u64 == 0 {
+                    mapping.has_line_numbers = false;
+                } else {
+                    mapping.has_line_numbers = true;
+                }
+            }
+            //10
+            10 => {
+                if buf.u64 == 0 {
+                    mapping.has_inline_frames = false;
+                } else {
+                    mapping.has_inline_frames = true;
+                }
+            }
+            _ => {
+                panic!("Unknown mapping type");
+            }
         }
-        mapping
     }
 }
 

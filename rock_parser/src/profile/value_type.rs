@@ -1,4 +1,4 @@
-use crate::profile::buffer::{decode_field, Buffer};
+use crate::profile::buffer::{Buffer};
 use crate::profile::Decoder;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -18,31 +18,19 @@ pub struct ValueType {
 }
 
 impl Decoder<ValueType> for ValueType {
-    #[inline]
-    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> ValueType {
-        let mut vt = ValueType::default();
-        while !data.is_empty() {
-            match decode_field(buf, data) {
-                Ok(_) => {
-                    match buf.field {
-                        //1
-                        1 => {
-                            vt.type_index = buf.u64 as i64;
-                        }
-                        //2
-                        2 => {
-                            vt.unit_index = buf.u64 as i64;
-                        }
-                        _ => {
-                            panic!("Unknown value_type type");
-                        }
-                    }
-                }
-                Err(err) => {
-                    panic!(err);
-                }
+    fn fill(buf: &mut Buffer, vt: &mut ValueType) {
+        match buf.field {
+            //1
+            1 => {
+                vt.type_index = buf.u64 as i64;
+            }
+            //2
+            2 => {
+                vt.unit_index = buf.u64 as i64;
+            }
+            _ => {
+                panic!("Unknown value_type type");
             }
         }
-        vt
     }
 }
