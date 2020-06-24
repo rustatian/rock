@@ -16,9 +16,15 @@ mod value_type;
 
 const NSEC_IN_SECOND: i64 = 1_000_000_000;
 
-pub trait Decoder<T>
-where
-    T: Default,
+// TODO think about pattern here
+// actually, to decode we need to know, that the first step should be decode, and then fill. It's a little bit confusing.
+// also, `fill` depends to the `decode`, which is from my POV not a good practise to have trait
+// with two heavily linked methods to each other (why separate them?)
+// TODO decouple
+trait Decoder<T>
+    where
+        T: Default
+
 {
     fn fill(buf: &mut Buffer, obj: &mut T);
 
@@ -537,7 +543,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(

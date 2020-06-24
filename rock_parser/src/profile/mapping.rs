@@ -1,5 +1,5 @@
 use crate::profile::buffer::{Buffer};
-use crate::profile::Decoder;
+use crate::profile::{Decoder};
 use std::default::Default;
 
 // TMP

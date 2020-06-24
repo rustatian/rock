@@ -1,5 +1,5 @@
 use crate::profile::buffer::{Buffer};
-use crate::profile::Decoder;
+use crate::profile::{Decoder};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 /// ValueType describes the semantics and measurement units of a value
