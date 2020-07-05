@@ -29,22 +29,22 @@ jobs:
           profile: default
           override: true
 
-#      - name: Cargo fmt
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: fmt
-#          args: --manifest-path Cargo.toml --all -- --check
+      - name: Cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path Cargo.toml --all -- --check
 
-#  clippy_check:
-#    name: Clippy check
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#      - run: rustup component add clippy
-#      - uses: actions-rs/clippy-check@v1
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          args: --manifest-path Cargo.toml --all-targets --all-features -- -D warnings
+  clippy_check:
+    name: Clippy check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: rustup component add clippy
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path Cargo.toml --all-targets --all-features -- -D warnings
 
   build:
     name: ${{ matrix.name }}
@@ -87,7 +87,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: bench
-          args: --manifest-path rock_parser/Cargo.toml
+          args: --manifest-path Cargo.toml
 
 
       - name: Test

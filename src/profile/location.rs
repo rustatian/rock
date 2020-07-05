@@ -1,4 +1,4 @@
-use crate::profile::buffer::{Buffer};
+use crate::profile::buffer::Buffer;
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
 

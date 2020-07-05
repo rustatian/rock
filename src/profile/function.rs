@@ -1,5 +1,5 @@
-use crate::profile::buffer::{Buffer, decode_field};
-use crate::profile::{Decoder};
+use crate::profile::buffer::Buffer;
+use crate::profile::Decoder;
 use std::default::Default;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]

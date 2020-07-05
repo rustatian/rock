@@ -1,5 +1,5 @@
-use crate::profile::buffer::{Buffer};
-use crate::profile::{Decoder};
+use crate::profile::buffer::Buffer;
+use crate::profile::Decoder;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct Label {

@@ -1,4 +1,4 @@
-use crate::profile::buffer::{Buffer};
+use crate::profile::buffer::Buffer;
 use crate::profile::{function, Decoder};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]

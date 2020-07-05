@@ -1,11 +1,12 @@
 use crate::profile::buffer::{decode_field, decode_string, decode_varint, Buffer, WireTypes};
+use crate::profile::errors::RockError;
 use chrono::NaiveDateTime;
-use rock_utils::errors::RockError;
 use std::borrow::Borrow;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 pub mod buffer;
+mod errors;
 mod function;
 mod label;
 mod line;
@@ -22,9 +23,8 @@ const NSEC_IN_SECOND: i64 = 1_000_000_000;
 // with two heavily linked methods to each other (why separate them?)
 // TODO decouple
 trait Decoder<T>
-    where
-        T: Default
-
+where
+    T: Default,
 {
     fn fill(buf: &mut Buffer, obj: &mut T);
 
@@ -215,10 +215,7 @@ impl Profile {
             }
             // repeated string string_table = 6
             6 => {
-                let data = buf
-                    .data
-                    .as_ref()
-                    .map_or(&[][..], |d| d.as_slice());
+                let data = buf.data.as_ref().map_or(&[][..], |d| d.as_slice());
                 self.string_table.push(decode_string(data));
                 if self.string_table[0] != "" {
                     panic!("String table[0] should be empty");
@@ -543,7 +540,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(
