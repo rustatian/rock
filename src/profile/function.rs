@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{Buffer, decode_field};
 use crate::profile::Decoder;
 use std::default::Default;
 
@@ -26,34 +26,46 @@ pub struct Function {
 }
 
 impl Decoder<Function> for Function {
-    fn fill(buf: &mut Buffer, func: &mut Function) {
-        match buf.field {
-            // optional uint64 id = 1
-            1 => {
-                func.id = buf.u64;
-            }
-            // optional int64 function_name = 2
-            // index to string table
-            2 => {
-                func.name_index = buf.u64 as i64;
-            }
-            // optional int64 function_system_name = 3
-            // index to string table
-            3 => {
-                func.system_name_index = buf.u64 as i64;
-            }
-            // repeated int64 filename = 4
-            // index to string table
-            4 => {
-                func.filename_index = buf.u64 as i64;
-            }
-            // optional int64 start_line = 5
-            5 => {
-                func.start_line = buf.u64 as i64;
-            }
-            _ => {
-                panic!("Unknown function type");
+    #[inline]
+    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Function {
+        let mut func = Function::default();
+        while !data.is_empty() {
+            match decode_field(buf, data) {
+                Ok(_) => {
+                    match buf.field {
+                        // optional uint64 id = 1
+                        1 => {
+                            func.id = buf.u64;
+                        }
+                        // optional int64 function_name = 2
+                        // index to string table
+                        2 => {
+                            func.name_index = buf.u64 as i64;
+                        }
+                        // optional int64 function_system_name = 3
+                        // index to string table
+                        3 => {
+                            func.system_name_index = buf.u64 as i64;
+                        }
+                        // repeated int64 filename = 4
+                        // index to string table
+                        4 => {
+                            func.filename_index = buf.u64 as i64;
+                        }
+                        // optional int64 start_line = 5
+                        5 => {
+                            func.start_line = buf.u64 as i64;
+                        }
+                        _ => {
+                            panic!("Unknown function type");
+                        }
+                    }
+                }
+                Err(err) => {
+                    panic!(err);
+                }
             }
         }
+        func
     }
 }

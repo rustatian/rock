@@ -1,4 +1,4 @@
-use crate::profile::buffer::{decode_field, decode_string, decode_varint, Buffer, WireTypes};
+use crate::profile::buffer::{decode_string, decode_varint, Buffer, WireTypes};
 use crate::profile::errors::RockError;
 use chrono::NaiveDateTime;
 use std::borrow::Borrow;
@@ -17,32 +17,8 @@ mod value_type;
 
 const NSEC_IN_SECOND: i64 = 1_000_000_000;
 
-// TODO think about pattern here
-// actually, to decode we need to know, that the first step should be decode, and then fill. It's a little bit confusing.
-// also, `fill` depends to the `decode`, which is from my POV not a good practise to have trait
-// with two heavily linked methods to each other (why separate them?)
-// TODO decouple
-trait Decoder<T>
-where
-    T: Default,
-{
-    fn fill(buf: &mut Buffer, obj: &mut T);
-
-    fn decode(buf: &mut Buffer) -> T {
-        let mut obj = T::default();
-        if buf.data.is_none() {
-            return obj;
-        }
-
-        let mut data = buf.data.as_ref().map_or(Vec::new(), |d| d.clone());
-        while !data.is_empty() {
-            match decode_field(buf, &mut data) {
-                Ok(()) => Self::fill(buf, &mut obj),
-                Err(err) => panic!(err),
-            }
-        }
-        obj
-    }
+pub trait Decoder<T> {
+    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> T;
 }
 
 // TODO ADD OPTIONAL TO THE STRUCT FIELDS
@@ -191,32 +167,32 @@ impl ToString for Profile {
 
 impl Profile {
     #[inline]
-    pub fn decode_profile_field(&mut self, buf: &mut Buffer) {
+    pub fn decode_profile_field(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
         match buf.field {
             // repeated ValueType sample_type = 1
             1 => {
-                self.sample_type.push(value_type::ValueType::decode(buf));
+                self.sample_type
+                    .push(value_type::ValueType::decode(buf, data));
             }
             // repeated Sample sample = 2
             2 => {
-                self.sample.push(sample::Sample::decode(buf));
+                self.sample.push(sample::Sample::decode(buf, data));
             }
             // repeated Mapping mapping = 3
             3 => {
-                self.mapping.push(mapping::Mapping::decode(buf));
+                self.mapping.push(mapping::Mapping::decode(buf, data));
             }
             // repeated Location location = 4
             4 => {
-                self.location.push(location::Location::decode(buf));
+                self.location.push(location::Location::decode(buf, data));
             }
             // repeated Function function = 5
             5 => {
-                self.function.push(function::Function::decode(buf));
+                self.function.push(function::Function::decode(buf, data));
             }
             // repeated string string_table = 6
             6 => {
-                let data = buf.data.as_ref().map_or(&[][..], |d| d.as_slice());
-                self.string_table.push(decode_string(data));
+                self.string_table.push(decode_string(data.as_ref()));
                 if self.string_table[0] != "" {
                     panic!("String table[0] should be empty");
                 }
@@ -243,7 +219,7 @@ impl Profile {
             }
             // ValueType period_type = 11
             11 => {
-                self.period_type = Option::from(value_type::ValueType::decode(buf));
+                self.period_type = Option::from(value_type::ValueType::decode(buf, data));
             }
             // int64 period = 12
             12 => {
@@ -252,17 +228,16 @@ impl Profile {
             // repeated int64 comment = 13
             13 => match buf.r#type {
                 WireTypes::WireBytes => loop {
-                    match buf.data {
-                        Some(ref mut data) if !data.is_empty() => {
-                            let res = decode_varint(data);
-                            match res {
-                                Ok(varint) => self.comment_index.push(varint as i64),
-                                Err(err) => {
-                                    panic!(err);
-                                }
+                    if !data.is_empty() {
+                        let res = decode_varint(data);
+                        match res {
+                            Ok(varint) => self.comment_index.push(varint as i64),
+                            Err(err) => {
+                                panic!(err);
                             }
                         }
-                        _ => break,
+                    } else {
+                        break;
                     }
                 },
                 _ => self.comment_index.push(buf.u64 as i64),
@@ -540,7 +515,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(

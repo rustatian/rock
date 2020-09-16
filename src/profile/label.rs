@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::Decoder;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
@@ -21,27 +21,40 @@ pub struct Label {
 }
 
 impl Decoder<Label> for Label {
-    fn fill(buf: &mut Buffer, lb: &mut Label) {
-        match buf.field {
-            //1
-            1 => {
-                lb.key_index = buf.u64 as i64;
-            }
-            //2
-            2 => {
-                lb.str_index = buf.u64 as i64;
-            }
-            //3
-            3 => {
-                lb.num_index = buf.u64 as i64;
-            }
-            //4
-            4 => {
-                lb.num_unit_index = buf.u64 as i64;
-            }
-            _ => {
-                panic!("Unknown label type");
+    #[inline]
+    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Label {
+        let mut lb = Label::default();
+        while !data.is_empty() {
+            match decode_field(buf, data) {
+                Ok(_) => {
+                    match buf.field {
+                        //1
+                        1 => {
+                            lb.key_index = buf.u64 as i64;
+                        }
+                        //2
+                        2 => {
+                            lb.str_index = buf.u64 as i64;
+                        }
+                        //3
+                        3 => {
+                            lb.num_index = buf.u64 as i64;
+                        }
+                        //4
+                        4 => {
+                            lb.num_unit_index = buf.u64 as i64;
+                        }
+                        _ => {
+                            panic!("Unknown label type");
+                        }
+                    }
+                }
+                Err(err) => {
+                    panic!(err);
+                }
             }
         }
+
+        lb
     }
 }

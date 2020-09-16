@@ -1,4 +1,4 @@
-use crate::profile::buffer::Buffer;
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
 
@@ -38,36 +38,48 @@ pub struct Location {
 }
 
 impl Decoder<Location> for Location {
-    fn fill(buf: &mut Buffer, loc: &mut Location) {
-        match buf.field {
-            // optional uint64 function_id = 1
-            1 => {
-                loc.id = buf.u64;
-            }
-            // optional int64 line = 2
-            2 => {
-                loc.mapping_index = buf.u64;
-            }
-            // optional uint64 address = 3;
-            3 => {
-                loc.address = buf.u64;
-            }
-            // repeated Line line = 4
-            4 => {
-                // todo!(why buf copied twice) ?????
-                loc.line.push(line::Line::decode(buf));
-            }
-            5 => {
-                if buf.u64 == 0 {
-                    loc.is_folder = false
-                } else {
-                    loc.is_folder = true
+    #[inline]
+    fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Location {
+        let mut loc = Location::default();
+        while !data.is_empty() {
+            match decode_field(buf, data) {
+                Ok(ref mut buf_data) => {
+                    match buf.field {
+                        // optional uint64 function_id = 1
+                        1 => {
+                            loc.id = buf.u64;
+                        }
+                        // optional int64 line = 2
+                        2 => {
+                            loc.mapping_index = buf.u64;
+                        }
+                        // optional uint64 address = 3;
+                        3 => {
+                            loc.address = buf.u64;
+                        }
+                        // repeated Line line = 4
+                        4 => {
+                            // todo!(why buf copied twice) ?????
+                            loc.line.push(line::Line::decode(buf, buf_data));
+                        }
+                        5 => {
+                            if buf.u64 == 0 {
+                                loc.is_folder = false
+                            } else {
+                                loc.is_folder = true
+                            }
+                        }
+                        _ => {
+                            panic!("Unknown location type");
+                        }
+                    }
+                }
+                Err(err) => {
+                    panic!(err);
                 }
             }
-            _ => {
-                panic!("Unknown location type");
-            }
         }
+        loc
     }
 }
 
