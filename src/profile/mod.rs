@@ -176,7 +176,8 @@ impl Profile {
             }
             // repeated Sample sample = 2
             2 => {
-                self.sample.push(sample::Sample::decode(buf, data));
+                let a = sample::Sample::decode(buf, data);
+                self.sample.push(a);
             }
             // repeated Mapping mapping = 3
             3 => {

@@ -1,6 +1,7 @@
 use crate::profile::buffer::{decode_field, decode_varint, Buffer, WireTypes};
 use crate::profile::{label, location, Decoder};
 use std::collections::HashMap;
+use std::env::var;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Each Sample records values encountered in some program
@@ -45,7 +46,10 @@ impl Decoder<Sample> for Sample {
                             WireTypes::WireBytes => {
                                 while !buf_data.is_empty() {
                                     match decode_varint(buf_data) {
-                                        Ok(varint) => s.location_index.push(varint as u64),
+                                        Ok(varint) => {
+                                            println!("{}", varint);
+                                            s.location_index.push(varint as u64)
+                                        },
                                         Err(err) => {
                                             panic!(err);
                                         }
