@@ -21,7 +21,6 @@ chrono = "0.4.19"
 criterion = "0.3.3"
 clap = "3.0.0-beta.2"
 flate2 = "1.0.19"
-mi-malloc_rust = { git = "https://github.com/48d90782/mi-malloc_rust", version = "0.3", default-features = false }
 
 [profile.dev]
 opt-level = 0
