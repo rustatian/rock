@@ -516,7 +516,7 @@ impl Profile {
             for ln in l.line.iter() {
                 if ln.function != function::Function::default()
                     && (ln.function.id == 0
-                    || functions.get(&ln.function.id) != Some(ln.function.borrow()))
+                        || functions.get(&ln.function.id) != Some(ln.function.borrow()))
                 {
                     return Err(RockError::ValidationFailed {
                         reason: format!(

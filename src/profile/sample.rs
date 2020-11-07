@@ -49,7 +49,7 @@ impl Decoder<Sample> for Sample {
                                         Ok(varint) => {
                                             println!("{}", varint);
                                             s.location_index.push(varint as u64)
-                                        },
+                                        }
                                         Err(err) => {
                                             panic!(err);
                                         }

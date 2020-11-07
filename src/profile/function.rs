@@ -1,4 +1,4 @@
-use crate::profile::buffer::{Buffer, decode_field};
+use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::Decoder;
 use std::default::Default;
 
