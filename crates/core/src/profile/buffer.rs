@@ -272,19 +272,19 @@ mod profile_test {
         // key - path to pb
         // value - path to related golden file
         let mut test_data = HashMap::<String, String>::new();
-        // test_data.insert(
-        //     String::from("tests/HEAP.pb.gz"),
-        //     String::from("tests/HEAP_GOLDEN.string"),
-        // );
-        // test_data.insert(
-        //     String::from("tests/CPU.pb.gz"),
-        //     String::from("tests/CPU_GOLDEN.string"),
-        // );
-        //
-        // test_data.insert(
-        //     String::from("tests/encoded"),
-        //     String::from("tests/encoded.string"),
-        // );
+        test_data.insert(
+            String::from("tests/HEAP.pb.gz"),
+            String::from("tests/HEAP_GOLDEN.string"),
+        );
+        test_data.insert(
+            String::from("tests/CPU.pb.gz"),
+            String::from("tests/CPU_GOLDEN.string"),
+        );
+
+        test_data.insert(
+            String::from("tests/encoded"),
+            String::from("tests/encoded.string"),
+        );
 
         test_data.insert(
             String::from("tests/RR_CPU.pb.gz"),

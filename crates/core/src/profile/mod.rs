@@ -772,7 +772,6 @@ mod tests {
             let mut p = Profile::default();
             for (i, num_label) in test.tag_vals.iter().enumerate() {
                 let mut s = Sample::default();
-                println!("executing: {}", test.desc);
                 s.num_label = num_label.clone();
                 if test.tag_units.is_empty() {
                     s.num_unit_label = HashMap::new();
