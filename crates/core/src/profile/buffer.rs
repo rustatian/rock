@@ -9,7 +9,7 @@ use std::convert::From;
 use std::string::ToString;
 
 // ProfileDecoder is a main trait to decode the profile
-pub trait ProfileDecoder {
+pub trait Decoder {
     fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError>;
 }
 
@@ -42,7 +42,17 @@ pub struct Buffer {
     pub u64: u64,
 }
 
-impl ProfileDecoder for Buffer {
+impl Default for Buffer {
+    fn default() -> Self {
+        Buffer {
+            field: 0,
+            r#type: WireTypes::WireVarint,
+            u64: 0,
+        }
+    }
+}
+
+impl Decoder for Buffer {
     fn decode(data: &mut Vec<u8>) -> Result<Profile, RockError> {
         // check is there data gzipped
         // https://tools.ietf.org/html/rfc1952#page-5
@@ -224,9 +234,9 @@ pub fn decode_varint(data: &mut Vec<u8>) -> Result<usize, RockError> {
         // 0011101100000000
         // 0011101101010110 = 15190
         u |= (((data[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-                                                                       // here we check all 8 bits for MSB
-                                                                       // if all bits are zero, we'are done
-                                                                       // if not, MSB is set and there is presents next byte to read
+        // here we check all 8 bits for MSB
+        // if all bits are zero, we'are done
+        // if not, MSB is set and there is presents next byte to read
         if data[i] & 0x80 == 0 {
             // drain first i-th number of elements
             data.drain(..=i);
@@ -265,7 +275,7 @@ mod profile_test {
     use std::collections::HashMap;
     use std::io::Read;
 
-    use crate::profile::buffer::ProfileDecoder;
+    use crate::profile::buffer::Decoder;
 
     #[test]
     fn parse() {

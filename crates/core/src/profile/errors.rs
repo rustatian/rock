@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use std::io::Error;
 
 #[derive(Debug)]
 pub enum RockError {
@@ -29,6 +30,25 @@ impl fmt::Display for RockError {
                 write!(f, "Failed to read compressed data. Error: {}", reason)
             }
             _ => panic!("Unknown type of error"),
+        }
+    }
+}
+
+impl From<RockError> for std::io::Error {
+    fn from(r: RockError) -> Self {
+        match r {
+            RockError::ProfileUncompressFailed { reason } => {
+                std::io::Error::new(std::io::ErrorKind::Other, reason)
+            }
+            RockError::DecodeFieldFailed { reason } => {
+                std::io::Error::new(std::io::ErrorKind::Other, reason)
+            }
+            RockError::ValidationFailed { reason } => {
+                std::io::Error::new(std::io::ErrorKind::Other, reason)
+            }
+            RockError::Unknown { reason } => {
+                std::io::Error::new(std::io::ErrorKind::Other, reason)
+            }
         }
     }
 }

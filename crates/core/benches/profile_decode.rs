@@ -1,6 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use core::profile;
-use core::profile::buffer::ProfileDecoder;
+use core::profile::buffer::Decoder;
 use std::io::Read;
 use std::time::Duration;
 

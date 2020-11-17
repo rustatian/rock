@@ -1,9 +1,10 @@
 #![warn(rust_2018_idioms)]
 
 use actix_web::client::Client;
+use core::profile::buffer::{Buffer, Decoder};
 
 #[actix_web::main]
-async fn main() {
+async fn main() -> std::io::Result<()> {
     let mut client = Client::default();
 
     // Create request builder and send request
@@ -13,4 +14,10 @@ async fn main() {
         .await;     // <- Wait for response
 
     println!("Response: {:?}", response);
+
+    let mut v = vec![1, 2];
+    let b = Buffer::decode(&mut v)?;
+    Ok(())
+
+    // b.
 }
