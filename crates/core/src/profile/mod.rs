@@ -789,10 +789,16 @@ mod tests {
             let (units, ignore_units) = p.num_label_units().unwrap();
 
             if !keys_match(&units, &test.want_units) {
-                panic!("{:?}: got {:?} units, want {:?}", test.desc, units, test.want_units);
+                panic!(
+                    "{:?}: got {:?} units, want {:?}",
+                    test.desc, units, test.want_units
+                );
             }
             if !keys_match(&ignore_units, &test.want_ignored_units) {
-                panic!("{:?}: got {:?} ignored units, want {:?}", test.desc, ignore_units, test.want_ignored_units);
+                panic!(
+                    "{:?}: got {:?} ignored units, want {:?}",
+                    test.desc, ignore_units, test.want_ignored_units
+                );
             }
         }
     }
