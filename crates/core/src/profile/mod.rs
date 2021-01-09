@@ -25,7 +25,7 @@ pub trait Decoder<T> {
 // TODO BUG, getString(p.stringTable, &p.dropFramesX, err) p.dropFramesX and similar logic. p.dropFramesX should became 0 !!!!
 // Profile is an in-memory representation of profile.proto
 
-#[derive(Default, Debug, Eq, PartialEq)]
+#[derive(Clone, Default, Debug, Eq, PartialEq)]
 pub struct Profile {
     // A description of the samples associated with each Sample.value.
     // For a cpu profile this might be:
@@ -89,7 +89,6 @@ type NumLabelUnitsWithIgnored = (HashMap<String, String>, HashMap<String, Vec<St
 
 /// Text representation of a profile. For debugging and testing purposes.
 impl ToString for Profile {
-    #[inline]
     fn to_string(&self) -> String {
         // pre-allocate space for vector
         let mut ss: Vec<String> = Vec::with_capacity(
@@ -166,7 +165,6 @@ impl ToString for Profile {
 }
 
 impl Profile {
-    #[inline]
     pub fn decode_profile_field(&mut self, buf: &mut Buffer, data: &mut Vec<u8>) {
         match buf.field {
             // repeated ValueType sample_type = 1
@@ -251,7 +249,6 @@ impl Profile {
         }
     }
 
-    #[inline]
     pub fn post_decode(&mut self) {
         // MAPPING DECODE
         let mut mappings: HashMap<u64, mapping::Mapping> = HashMap::new();
