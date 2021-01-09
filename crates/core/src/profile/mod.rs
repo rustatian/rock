@@ -680,6 +680,7 @@ mod tests {
 
     #[test]
     fn test_num_label_units() {
+        #[derive(Debug)]
         struct TagFilterTests {
             desc: String,
             tag_vals: Vec<HashMap<String, Vec<i64>>>,
@@ -771,8 +772,11 @@ mod tests {
         for test in tests {
             let mut p = Profile::default();
             for (i, num_label) in test.tag_vals.iter().enumerate() {
-                let mut s = Sample::default();
-                s.num_label = num_label.clone();
+                let mut s = Sample {
+                    num_label: num_label.clone(),
+                    ..Default::default()
+                };
+
                 if test.tag_units.is_empty() {
                     s.num_unit_label = HashMap::new();
                 } else {
@@ -784,8 +788,12 @@ mod tests {
 
             let (units, ignore_units) = p.num_label_units().unwrap();
 
-            assert_eq!(keys_match(&units, &test.want_units), true);
-            assert_eq!(keys_match(&ignore_units, &test.want_ignored_units), true);
+            if !keys_match(&units, &test.want_units) {
+                panic!("{:?}: got {:?} units, want {:?}", test.desc, units, test.want_units);
+            }
+            if !keys_match(&ignore_units, &test.want_ignored_units) {
+                panic!("{:?}: got {:?} ignored units, want {:?}", test.desc, ignore_units, test.want_ignored_units);
+            }
         }
     }
 
