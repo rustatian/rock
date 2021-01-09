@@ -37,7 +37,6 @@ pub struct Mapping {
 }
 
 impl Decoder<Mapping> for Mapping {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Mapping {
         let mut mapping = Mapping::default();
         while !data.is_empty() {
@@ -112,7 +111,6 @@ impl Decoder<Mapping> for Mapping {
 }
 
 impl ToString for Mapping {
-    #[inline]
     fn to_string(&self) -> String {
         let mut bits = String::new();
 

@@ -13,7 +13,6 @@ pub struct Line {
 }
 
 impl Decoder<Line> for Line {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Line {
         let mut line = Line::default();
         while !data.is_empty() {

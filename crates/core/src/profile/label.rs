@@ -21,7 +21,6 @@ pub struct Label {
 }
 
 impl Decoder<Label> for Label {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Label {
         let mut lb = Label::default();
         while !data.is_empty() {

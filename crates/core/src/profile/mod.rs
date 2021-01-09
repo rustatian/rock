@@ -194,7 +194,7 @@ impl Profile {
             // repeated string string_table = 6
             6 => {
                 self.string_table.push(decode_string(data.as_ref()));
-                if self.string_table[0] != "" {
+                if !self.string_table[0].is_empty() {
                     panic!("String table[0] should be empty");
                 }
             }

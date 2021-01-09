@@ -26,7 +26,6 @@ pub struct Function {
 }
 
 impl Decoder<Function> for Function {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Function {
         let mut func = Function::default();
         while !data.is_empty() {

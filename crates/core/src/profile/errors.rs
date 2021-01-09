@@ -1,6 +1,5 @@
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::io::Error;
 
 #[derive(Debug)]
 pub enum RockError {
@@ -46,9 +45,7 @@ impl From<RockError> for std::io::Error {
             RockError::ValidationFailed { reason } => {
                 std::io::Error::new(std::io::ErrorKind::Other, reason)
             }
-            RockError::Unknown { reason } => {
-                std::io::Error::new(std::io::ErrorKind::Other, reason)
-            }
+            RockError::Unknown { reason } => std::io::Error::new(std::io::ErrorKind::Other, reason),
         }
     }
 }

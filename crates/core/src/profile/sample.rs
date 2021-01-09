@@ -45,9 +45,7 @@ impl Decoder<Sample> for Sample {
                             WireTypes::WireBytes => {
                                 while !buf_data.is_empty() {
                                     match decode_varint(buf_data) {
-                                        Ok(varint) => {
-                                            s.location_index.push(varint as u64)
-                                        }
+                                        Ok(varint) => s.location_index.push(varint as u64),
                                         Err(err) => {
                                             panic!(err);
                                         }

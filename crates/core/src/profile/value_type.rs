@@ -18,7 +18,6 @@ pub struct ValueType {
 }
 
 impl Decoder<ValueType> for ValueType {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> ValueType {
         let mut vt = ValueType::default();
         while !data.is_empty() {

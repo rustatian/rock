@@ -38,7 +38,6 @@ pub struct Location {
 }
 
 impl Decoder<Location> for Location {
-    #[inline]
     fn decode(buf: &mut Buffer, data: &mut Vec<u8>) -> Location {
         let mut loc = Location::default();
         while !data.is_empty() {
