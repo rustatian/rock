@@ -1,7 +1,7 @@
 use iced::{
-    button, scrollable, text_input, Align, Application, Button, Checkbox,
-    Column, Command, Container, Element, Font, HorizontalAlignment, Length,
-    Row, Scrollable, Settings, Text, TextInput,
+    button, scrollable, text_input, Align, Application, Button, Checkbox, Column, Command,
+    Container, Element, Font, HorizontalAlignment, Length, Row, Scrollable, Settings, Text,
+    TextInput,
 };
 use serde::{Deserialize, Serialize};
 
@@ -34,7 +34,7 @@ enum Message {
     InputChanged(String),
     CreateTask,
     FilterChanged(Filter),
-    TaskMessage(usize, TaskMessage),
+    Task(usize, TaskMessage),
 }
 
 impl Application for Todos {
@@ -87,19 +87,17 @@ impl Application for Todos {
                     }
                     Message::CreateTask => {
                         if !state.input_value.is_empty() {
-                            state
-                                .tasks
-                                .push(Task::new(state.input_value.clone()));
+                            state.tasks.push(Task::new(state.input_value.clone()));
                             state.input_value.clear();
                         }
                     }
                     Message::FilterChanged(filter) => {
                         state.filter = filter;
                     }
-                    Message::TaskMessage(i, TaskMessage::Delete) => {
+                    Message::Task(i, TaskMessage::Delete) => {
                         state.tasks.remove(i);
                     }
-                    Message::TaskMessage(i, task_message) => {
+                    Message::Task(i, task_message) => {
                         if let Some(task) = state.tasks.get_mut(i) {
                             task.update(task_message);
                         }
@@ -164,8 +162,7 @@ impl Application for Todos {
                 .on_submit(Message::CreateTask);
 
                 let controls = controls.view(&tasks, *filter);
-                let filtered_tasks =
-                    tasks.iter().filter(|task| filter.matches(task));
+                let filtered_tasks = tasks.iter().filter(|task| filter.matches(task));
 
                 let tasks: Element<_> = if filtered_tasks.count() > 0 {
                     tasks
@@ -173,18 +170,14 @@ impl Application for Todos {
                         .enumerate()
                         .filter(|(_, task)| filter.matches(task))
                         .fold(Column::new().spacing(20), |column, (i, task)| {
-                            column.push(task.view().map(move |message| {
-                                Message::TaskMessage(i, message)
-                            }))
+                            column.push(task.view().map(move |message| Message::Task(i, message)))
                         })
                         .into()
                 } else {
                     empty_message(match filter {
                         Filter::All => "You have not created a task yet...",
                         Filter::Active => "All your tasks are done! :D",
-                        Filter::Completed => {
-                            "You have not completed a task yet..."
-                        }
+                        Filter::Completed => "You have not completed a task yet...",
                     })
                 };
 
@@ -198,9 +191,7 @@ impl Application for Todos {
 
                 Scrollable::new(scroll)
                     .padding(40)
-                    .push(
-                        Container::new(content).width(Length::Fill).center_x(),
-                    )
+                    .push(Container::new(content).width(Length::Fill).center_x())
                     .into()
             }
         }
@@ -283,12 +274,9 @@ impl Task {
     fn view(&mut self) -> Element<TaskMessage> {
         match &mut self.state {
             TaskState::Idle { edit_button } => {
-                let checkbox = Checkbox::new(
-                    self.completed,
-                    &self.description,
-                    TaskMessage::Completed,
-                )
-                .width(Length::Fill);
+                let checkbox =
+                    Checkbox::new(self.completed, &self.description, TaskMessage::Completed)
+                        .width(Length::Fill);
 
                 Row::new()
                     .spacing(20)
@@ -356,10 +344,9 @@ impl Controls {
 
         let filter_button = |state, label, filter, current_filter| {
             let label = Text::new(label).size(16);
-            let button =
-                Button::new(state, label).style(style::Button::Filter {
-                    selected: filter == current_filter,
-                });
+            let button = Button::new(state, label).style(style::Button::Filter {
+                selected: filter == current_filter,
+            });
 
             button.on_press(Message::FilterChanged(filter)).padding(8)
         };
@@ -483,15 +470,15 @@ struct SavedState {
 
 #[derive(Debug, Clone)]
 enum LoadError {
-    FileError,
-    FormatError,
+    File,
+    Format,
 }
 
 #[derive(Debug, Clone)]
 enum SaveError {
-    FileError,
-    WriteError,
-    FormatError,
+    File,
+    Write,
+    Format,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -502,7 +489,7 @@ impl SavedState {
         {
             project_dirs.data_dir().into()
         } else {
-            std::env::current_dir().unwrap_or(std::path::PathBuf::new())
+            std::env::current_dir().unwrap_or_default()
         };
 
         path.push("todos.json");
@@ -517,76 +504,40 @@ impl SavedState {
 
         let mut file = async_std::fs::File::open(Self::path())
             .await
-            .map_err(|_| LoadError::FileError)?;
+            .map_err(|_| LoadError::File)?;
 
         file.read_to_string(&mut contents)
             .await
-            .map_err(|_| LoadError::FileError)?;
+            .map_err(|_| LoadError::File)?;
 
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
+        serde_json::from_str(&contents).map_err(|_| LoadError::Format)
     }
 
     async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
 
-        let json = serde_json::to_string_pretty(&self)
-            .map_err(|_| SaveError::FormatError)?;
+        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::Format)?;
 
         let path = Self::path();
 
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
                 .await
-                .map_err(|_| SaveError::FileError)?;
+                .map_err(|_| SaveError::File)?;
         }
 
         {
             let mut file = async_std::fs::File::create(path)
                 .await
-                .map_err(|_| SaveError::FileError)?;
+                .map_err(|_| SaveError::File)?;
 
             file.write_all(json.as_bytes())
                 .await
-                .map_err(|_| SaveError::WriteError)?;
+                .map_err(|_| SaveError::Write)?;
         }
 
         // This is a simple way to save at most once every couple seconds
         async_std::task::sleep(std::time::Duration::from_secs(2)).await;
-
-        Ok(())
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-impl SavedState {
-    fn storage() -> Option<web_sys::Storage> {
-        let window = web_sys::window()?;
-
-        window.local_storage().ok()?
-    }
-
-    async fn load() -> Result<SavedState, LoadError> {
-        let storage = Self::storage().ok_or(LoadError::FileError)?;
-
-        let contents = storage
-            .get_item("state")
-            .map_err(|_| LoadError::FileError)?
-            .ok_or(LoadError::FileError)?;
-
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
-    }
-
-    async fn save(self) -> Result<(), SaveError> {
-        let storage = Self::storage().ok_or(SaveError::FileError)?;
-
-        let json = serde_json::to_string_pretty(&self)
-            .map_err(|_| SaveError::FormatError)?;
-
-        storage
-            .set_item("state", &json)
-            .map_err(|_| SaveError::WriteError)?;
-
-        let _ = wasm_timer::Delay::new(std::time::Duration::from_secs(2)).await;
 
         Ok(())
     }
@@ -607,9 +558,7 @@ mod style {
                 Button::Filter { selected } => {
                     if *selected {
                         button::Style {
-                            background: Some(Background::Color(
-                                Color::from_rgb(0.2, 0.2, 0.7),
-                            )),
+                            background: Some(Background::Color(Color::from_rgb(0.2, 0.2, 0.7))),
                             border_radius: 10.0,
                             text_color: Color::WHITE,
                             ..button::Style::default()
@@ -623,9 +572,7 @@ mod style {
                     ..button::Style::default()
                 },
                 Button::Destructive => button::Style {
-                    background: Some(Background::Color(Color::from_rgb(
-                        0.8, 0.2, 0.2,
-                    ))),
+                    background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
                     border_radius: 5.0,
                     text_color: Color::WHITE,
                     shadow_offset: Vector::new(1.0, 1.0),
@@ -640,9 +587,7 @@ mod style {
             button::Style {
                 text_color: match self {
                     Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
-                    Button::Filter { selected } if !selected => {
-                        Color::from_rgb(0.2, 0.2, 0.7)
-                    }
+                    Button::Filter { selected } if !selected => Color::from_rgb(0.2, 0.2, 0.7),
                     _ => active.text_color,
                 },
                 shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
