@@ -7,14 +7,14 @@ type EdgeMap<'a, 'b> = HashMap<Node<'a>, Edge<'b>>;
 
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 struct Graph<'graph> {
     nodes: &'graph Node<'graph>,
 }
 
 // Node is an entry on a profiling report. It represents a unique
 // program location.
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 struct Node<'node> {
     // Info describes the source location associated to this node.
     info: NodeInfo<'node>,
@@ -32,6 +32,12 @@ struct Node<'node> {
     flat_div: i64,
     cum: i64,
     cum_div: i64,
+    // TODO edge lifetime??
+    // In and out Contains the nodes immediately reaching or reached by
+    // this node.
+    r#in: EdgeMap<'node, 'node>,
+    out: EdgeMap<'node, 'node>,
+    // label_tags:
 }
 
 // NodeInfo contains the attributes for a node.
@@ -70,4 +76,16 @@ impl<'a> Edge<'a> {
         }
         self.weight / self.weight_div
     }
+}
+
+// Tag represent sample annotations
+struct Tag<'t> {
+    name: &'t str,
+    // Describe the value, "" for non-numeric tags
+    unit: &'t str,
+    value: i64,
+    flat: i64,
+    flat_div: i64,
+    cum: i64,
+    cum_div: i64,
 }
