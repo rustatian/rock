@@ -6,7 +6,7 @@ use std::collections::HashMap;
 type EdgeMap<'a> = HashMap<Node<'a>, Edge<'a>>;
 
 // TagMap is a collection of tags, classified by their name.
-type TagMap<'t> = HashMap<&'t str, &'t Tag>;
+type TagMap<'t> = HashMap<&'t str, &'t Tag<'t>>;
 
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
@@ -40,7 +40,14 @@ struct Node<'node> {
     // this node.
     r#in: EdgeMap<'node>,
     out: EdgeMap<'node>,
-    // label_tags:
+    // LabelTags provide additional information about subsets of a sample.
+    label_tags: TagMap<'node>,
+
+    // NumericTags provide additional values for subsets of a sample.
+    // Numeric tags are optionally associated to a label tag. The key
+    // for NumericTags is the name of the LabelTag they are associated
+    // to, or "" for numeric tags not associated to a label tag.
+    numeric_tags: HashMap<&'node str, TagMap<'node>>,
 }
 
 // NodeInfo contains the attributes for a node.
@@ -82,6 +89,7 @@ impl<'a> Edge<'a> {
 }
 
 // Tag represent sample annotations
+#[derive(Clone, Debug)]
 struct Tag<'t> {
     name: &'t str,
     // Describe the value, "" for non-numeric tags
