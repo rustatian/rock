@@ -18,7 +18,14 @@ struct Node<'node> {
     // addresses), two nodes in a NodeMap that are part of the same
     // function have the same value of Node.Function. If the Node
     // represents the whole function, it points back to itself.
-    function: &'node Node<'node>
+    function: &'node Node<'node>,
+
+    // Values associated to this node. Flat is exclusive to this node,
+    // Cum includes all descendents.
+    flat: i64,
+    flat_div: i64,
+    cum: i64,
+    cum_div: i64,
 }
 
 // NodeInfo contains the attributes for a node.
