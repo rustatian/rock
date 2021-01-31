@@ -47,6 +47,7 @@ struct NodeInfo<'n> {
 }
 
 // Edge contains any attributes to be represented about edges in a graph.
+#[derive(Copy, Clone, Debug)]
 struct Edge<'edge> {
     src: &'edge Node<'edge>,
     dest: &'edge Node<'edge>,
@@ -58,4 +59,15 @@ struct Edge<'edge> {
     residual: bool,
     // An inline edge represents a call that was inlined into the caller.
     inline: bool,
+}
+
+impl<'a> Edge<'a> {
+    // WeightValue returns the weight value for this edge, normalizing if a
+    // divisor is available.
+    pub fn weight_value(&self) -> i64 {
+        if self.weight_div == 0 {
+            return self.weight;
+        }
+        self.weight / self.weight_div
+    }
 }
