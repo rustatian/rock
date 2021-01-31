@@ -3,7 +3,10 @@
 use std::collections::HashMap;
 
 // EdgeMap is used to represent the incoming/outgoing edges from a node.
-type EdgeMap<'a, 'b> = HashMap<Node<'a>, Edge<'b>>;
+type EdgeMap<'a> = HashMap<Node<'a>, Edge<'a>>;
+
+// TagMap is a collection of tags, classified by their name.
+type TagMap<'t> = HashMap<&'t str, &'t Tag>;
 
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
@@ -35,8 +38,8 @@ struct Node<'node> {
     // TODO edge lifetime??
     // In and out Contains the nodes immediately reaching or reached by
     // this node.
-    r#in: EdgeMap<'node, 'node>,
-    out: EdgeMap<'node, 'node>,
+    r#in: EdgeMap<'node>,
+    out: EdgeMap<'node>,
     // label_tags:
 }
 
@@ -88,4 +91,24 @@ struct Tag<'t> {
     flat_div: i64,
     cum: i64,
     cum_div: i64,
+}
+
+impl<'t> Tag<'t> {
+    // CumValue returns the inclusive value for this tag, computing the
+    // mean if a divisor is available.
+    pub fn cum_value(&self) -> i64 {
+        if self.cum_div == 0 {
+            return self.cum;
+        }
+        self.cum / self.cum_div
+    }
+
+    // FlatValue returns the exclusive value for this tag, computing the
+    // mean if a divisor is available.
+    pub fn flat_value(&self) -> i64 {
+        if self.flat_div == 0 {
+            return self.flat;
+        }
+        self.flat / self.flat_div
+    }
 }
