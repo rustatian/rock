@@ -2,13 +2,12 @@
 #![allow(dead_code)] //temporary
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::ops::Deref;
 
 // EdgeMap is used to represent the incoming/outgoing edges from a node.
-// type EdgeMap<'a> = HashMap<Node<'a>, Edge<'a>>;
+type EdgeMap<'a> = HashMap<&'a Node<'a>, &'a Edge<'a>>;
 
 // TagMap is a collection of tags, classified by their name.
-// type TagMap = HashMap<String, Tag>;
+type TagMap = HashMap<String, Tag>;
 
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
@@ -20,7 +19,7 @@ struct Graph<'a> {
 // Node is an entry on a profiling report. It represents a unique
 // program location.
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
-struct Node<'a, T> where T:Eq + Hash {
+struct Node<'a> {
     // Info describes the source location associated to this node.
     info: NodeInfo,
 
@@ -29,7 +28,7 @@ struct Node<'a, T> where T:Eq + Hash {
     // addresses), two nodes in a NodeMap that are part of the same
     // function have the same value of Node.Function. If the Node
     // represents the whole function, it points back to itself.
-    function: Box<T>,
+    function: Box<Node<'a>>,
 
     // Values associated to this node. Flat is exclusive to this node,
     // Cum includes all descendents.
@@ -40,19 +39,19 @@ struct Node<'a, T> where T:Eq + Hash {
     // TODO edge lifetime??
     // In and out Contains the nodes immediately reaching or reached by
     // this node.
-    r#in: HashMap<&'a T, &'a T>,
-    out: HashMap<&'a T, &'a T>,
+    r#in: EdgeMap<'a>,
+    out: EdgeMap<'a>,
     // LabelTags provide additional information about subsets of a sample.
-    label_tags: HashMap<String, Tag>,
+    label_tags: TagMap,
 
     // NumericTags provide additional values for subsets of a sample.
     // Numeric tags are optionally associated to a label tag. The key
     // for NumericTags is the name of the LabelTag they are associated
     // to, or "" for numeric tags not associated to a label tag.
-    numeric_tags: HashMap<String, HashMap<String, Tag>>,
+    numeric_tags: HashMap<String, TagMap>,
 }
 
-impl Hash for Node {
+impl Hash for Node<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.info.hash(state);
         self.function.hash(state);
@@ -99,7 +98,7 @@ impl<'a> Node<'a> {
         residual: bool,
         inline: bool,
     ) {
-        // let node1 = self.input.
+        // let node1 = self.r#in.
         // if self.r#in[to] != self.r#in[self] {
         //     panic!("error");
         // }
