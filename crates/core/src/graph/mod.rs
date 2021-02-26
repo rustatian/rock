@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 // EdgeMap is used to represent the incoming/outgoing edges from a node.
-type EdgeMap<'a> = HashMap<&'a Node<'a>, &'a Edge<'a>>;
+type EdgeMap = HashMap<Node, Edge>;
 
 // TagMap is a collection of tags, classified by their name.
 type TagMap = HashMap<String, Tag>;
@@ -12,14 +12,14 @@ type TagMap = HashMap<String, Tag>;
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
 #[derive(Clone, Debug)]
-struct Graph<'a> {
-    nodes: Node<'a>,
+struct Graph {
+    nodes: Node,
 }
 
 // Node is an entry on a profiling report. It represents a unique
 // program location.
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
-struct Node<'a> {
+struct Node {
     // Info describes the source location associated to this node.
     info: NodeInfo,
 
@@ -28,10 +28,10 @@ struct Node<'a> {
     // addresses), two nodes in a NodeMap that are part of the same
     // function have the same value of Node.Function. If the Node
     // represents the whole function, it points back to itself.
-    function: Box<Node<'a>>,
+    function: Box<Node>,
 
     // Values associated to this node. Flat is exclusive to this node,
-    // Cum includes all descendents.
+    // Cum includes all descendent.
     flat: i64,
     flat_div: i64,
     cum: i64,
@@ -39,19 +39,20 @@ struct Node<'a> {
     // TODO edge lifetime??
     // In and out Contains the nodes immediately reaching or reached by
     // this node.
-    r#in: EdgeMap<'a>,
-    out: EdgeMap<'a>,
+    r#in: HashMap<Node, Edge>,
+    out: HashMap<Node, Edge>,
     // LabelTags provide additional information about subsets of a sample.
-    label_tags: TagMap,
+    label_tags: HashMap<String, Tag>,
+    test: HashMap<String, String>,
 
     // NumericTags provide additional values for subsets of a sample.
     // Numeric tags are optionally associated to a label tag. The key
     // for NumericTags is the name of the LabelTag they are associated
     // to, or "" for numeric tags not associated to a label tag.
-    numeric_tags: HashMap<String, TagMap>,
+    numeric_tags: HashMap<String, HashMap<String, Tag>>,
 }
 
-impl Hash for Node<'_> {
+impl Hash for Node {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.info.hash(state);
         self.function.hash(state);
@@ -62,7 +63,7 @@ impl Hash for Node<'_> {
     }
 }
 
-impl<'a> Node<'a> {
+impl Node {
     pub fn new() -> Self {
         Node::default()
     }
@@ -84,24 +85,47 @@ impl<'a> Node<'a> {
         self.cum / self.cum_div
     }
 
-    pub fn add_to_edge(&mut self, to: &mut Node<'_>, v: i64, residual: bool, inline: bool) {}
+    // pub fn add_to_edge(&mut self, to: &mut Node, v: i64, residual: bool, inline: bool) {}
 
-    // fn keys_match<T: Eq + Hash, U>(map1: &HashMap<T, U>, map2: &HashMap<T, U>) -> bool {
-    //     map1.len() == map2.len() && map1.keys().all(|k| map2.contains_key(k))
-    // }
-
-    pub fn add_to_edge_div<T: Eq + Hash>(
+    pub fn add_to_edge_div(
         &mut self,
-        to: &mut Node<'_>,
+        to: &mut Node,
         dv: i64,
         v: i64,
         residual: bool,
         inline: bool,
     ) {
-        // let node1 = self.r#in.
-        // if self.r#in[to] != self.r#in[self] {
-        //     panic!("error");
-        // }
+        let node1 = self.r#in.get(to).unwrap();
+        let node2 = self.r#in.get(self).unwrap();
+
+        if node1 != node2 {
+            panic!("asymmetric edges {:?} {:?}", self, to);
+        }
+
+        // can be nil
+
+        if let Some(e) = self.r#in.get_mut(to) {
+            e.weight_div += dv;
+            e.weight += v;
+            if residual {
+                e.residual = true;
+            }
+            if !inline {
+                e.inline = false;
+            }
+            return;
+        }
+
+        let info = Edge {
+            src: self.clone(),
+            dest: to.clone(),
+            weight_div: dv,
+            weight: v,
+            residual: residual,
+            inline: inline,
+        };
+        self.out.insert(to.clone(), info.clone());
+        to.r#in.insert(self.clone(), info);
     }
 }
 
@@ -119,9 +143,9 @@ struct NodeInfo {
 
 // Edge contains any attributes to be represented about edges in a graph.
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
-struct Edge<'a> {
-    src: &'a Node<'a>,
-    dest: &'a Node<'a>,
+struct Edge {
+    src: Node,
+    dest: Node,
     // The summary weight of the edge
     weight: i64,
     weight_div: i64,
@@ -132,7 +156,7 @@ struct Edge<'a> {
     inline: bool,
 }
 
-impl<'a> Edge<'a> {
+impl<'a> Edge {
     // WeightValue returns the weight value for this edge, normalizing if a
     // divisor is available.
     pub fn weight_value(&self) -> i64 {
