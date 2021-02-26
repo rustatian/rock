@@ -121,8 +121,8 @@ impl Node {
             dest: to.clone(),
             weight_div: dv,
             weight: v,
-            residual: residual,
-            inline: inline,
+            residual,
+            inline,
         };
         self.out.insert(to.clone(), info.clone());
         to.r#in.insert(self.clone(), info);
