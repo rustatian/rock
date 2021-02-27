@@ -84,8 +84,14 @@ impl Node {
         self.cum / self.cum_div
     }
 
-    // pub fn add_to_edge(&mut self, to: &mut Node, v: i64, residual: bool, inline: bool) {}
+    // AddToEdge increases the weight of an edge between two nodes. If
+    // there isn't such an edge one is created.
+    pub fn add_to_edge(&mut self, to: &mut Node, v: i64, residual: bool, inline: bool) {
+        self.add_to_edge_div(to, 0, v, residual, inline);
+    }
 
+    // AddToEdgeDiv increases the weight of an edge between two nodes. If
+    // there isn't such an edge one is created.
     pub fn add_to_edge_div(
         &mut self,
         to: &mut Node,
