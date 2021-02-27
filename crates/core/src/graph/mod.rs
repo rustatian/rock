@@ -43,7 +43,6 @@ struct Node {
     out: HashMap<Node, Edge>,
     // LabelTags provide additional information about subsets of a sample.
     label_tags: HashMap<String, Tag>,
-    test: HashMap<String, String>,
 
     // NumericTags provide additional values for subsets of a sample.
     // Numeric tags are optionally associated to a label tag. The key
@@ -95,15 +94,15 @@ impl Node {
         residual: bool,
         inline: bool,
     ) {
-        let node1 = self.r#in.get(to).unwrap();
-        let node2 = self.r#in.get(self).unwrap();
-
-        if node1 != node2 {
-            panic!("asymmetric edges {:?} {:?}", self, to);
+        if let Some(node1) = self.r#in.get(to) {
+            if let Some(node2) = self.out.get(self) {
+                if node1 != node2 {
+                    panic!("asymmetric edges {:?} {:?}", self, to);
+                }
+            }
         }
 
         // can be nil
-
         if let Some(e) = self.r#in.get_mut(to) {
             e.weight_div += dv;
             e.weight += v;
