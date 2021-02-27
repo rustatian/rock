@@ -16,6 +16,24 @@ struct Graph {
     nodes: Node,
 }
 
+#[derive(Debug)]
+struct Options<T, U>
+where
+    T: FnOnce(&[i64]) -> i64,
+    U: FnOnce(i64, String) -> String,
+{
+    sample_value: T,
+    sample_mean_divisor: T,
+    format_tag: U,
+    obj_names: bool,
+    orig_fn_names: bool,
+
+    call_tree: bool,
+    drop_negative: bool,
+
+    kept_nodes: HashMap<NodeInfo, bool>,
+}
+
 // Node is an entry on a profiling report. It represents a unique
 // program location.
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
