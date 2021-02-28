@@ -1,7 +1,13 @@
 #![warn(missing_debug_implementations)]
-#![allow(dead_code)] //temporary
+#![allow(dead_code)] //TODO remove later
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+
+#[cfg(target_os = "windows")]
+const SEPARATOR: &str = "\\";
+
+#[cfg(target_os = "linux")]
+const SEPARATOR: &str = "/";
 
 // EdgeMap is used to represent the incoming/outgoing edges from a node.
 type EdgeMap = HashMap<Node, Edge>;
@@ -179,6 +185,57 @@ struct NodeInfo {
     objfile: String,
 }
 
+impl NodeInfo {
+    // PrintableName calls the Node's Formatter function with a single space separator.
+    pub fn printable_name(&self) -> String {
+        self.name_components().join(" ")
+    }
+
+    // NameComponents returns the components of the printable name to be used for a node.
+    pub fn name_components(&self) -> Vec<String> {
+        let mut name = vec![];
+
+        if self.address != 0 {
+            name.push(format!("{:x}", self.address));
+        }
+
+        if !self.name.is_empty() {
+            name.push(self.name.to_string());
+        }
+
+        if self.lineno != 0 {
+            name.push(format!("{}:{}", self.file, self.lineno));
+        }
+
+        if !self.file.is_empty() {
+            name.push(self.file.to_string());
+        }
+
+        if !self.name.is_empty() {
+            name.push(self.name.to_string());
+        }
+
+        if !self.objfile.is_empty() {
+            name.push(format!("[{}]", get_basename(&self.objfile, SEPARATOR)));
+        }
+
+        if name.is_empty() {
+            name.push("<unknown>".to_string());
+        }
+
+        name
+    }
+}
+
+fn get_basename<'a>(path: &'a str, pat: &'a str) -> String {
+    let mut parts = path.rsplit(pat);
+
+    match parts.next() {
+        None => "".into(),
+        Some(path) => path.into(),
+    }
+}
+
 // Edge contains any attributes to be represented about edges in a graph.
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 struct Edge {
@@ -235,5 +292,17 @@ impl Tag {
             return self.flat;
         }
         self.flat / self.flat_div
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::graph::{get_basename, SEPARATOR};
+
+    #[test]
+    fn test_get_basename() {
+        assert_eq!(get_basename("/usr/data", SEPARATOR), "data");
+        assert_eq!(get_basename("/", SEPARATOR), "");
+        assert_eq!(get_basename("/root", SEPARATOR), "root");
     }
 }
