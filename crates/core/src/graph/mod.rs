@@ -19,8 +19,8 @@ struct Graph {
 #[derive(Debug)]
 struct Options<T, U>
 where
-    T: FnOnce(&[i64]) -> i64,
-    U: FnOnce(i64, String) -> String,
+    T: Fn(&[i64]) -> i64,
+    U: Fn(i64, String) -> String,
 {
     sample_value: T,
     sample_mean_divisor: T,
@@ -36,7 +36,7 @@ where
 
 // Node is an entry on a profiling report. It represents a unique
 // program location.
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Clone, Debug, Eq, Default)]
 struct Node {
     // Info describes the source location associated to this node.
     info: NodeInfo,
@@ -77,6 +77,21 @@ impl Hash for Node {
         self.flat_div.hash(state);
         self.cum.hash(state);
         self.cum_div.hash(state);
+    }
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.flat == other.flat
+            && self.info == other.info
+            && self.function == other.function
+            && self.flat_div == other.flat_div
+            && self.cum == other.cum
+            && self.cum_div == other.cum_div
+            && self.r#in == other.r#in
+            && self.out == other.out
+            && self.label_tags == other.label_tags
+            && self.numeric_tags == other.numeric_tags
     }
 }
 
@@ -179,7 +194,7 @@ struct Edge {
     inline: bool,
 }
 
-impl<'a> Edge {
+impl Edge {
     // WeightValue returns the weight value for this edge, normalizing if a
     // divisor is available.
     pub fn weight_value(&self) -> i64 {
