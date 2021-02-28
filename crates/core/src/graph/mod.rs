@@ -1,7 +1,8 @@
 #![warn(missing_debug_implementations)]
 #![allow(dead_code)] //TODO remove later
-use std::collections::HashMap;
+use crate::profile::Profile;
 use std::hash::{Hash, Hasher};
+use std::{collections::HashMap, vec};
 
 #[cfg(target_os = "windows")]
 const SEPARATOR: &str = "\\";
@@ -15,11 +16,61 @@ type EdgeMap = HashMap<Node, Edge>;
 // TagMap is a collection of tags, classified by their name.
 type TagMap = HashMap<String, Tag>;
 
+type Nodes = Vec<Node>;
+
+// NodeMap maps from a node info struct to a node. It is used to merge
+// report entries with the same info.
+type NodeMap = HashMap<NodeInfo, Node>;
+
+// NodeSet is a collection of node info structs.
+type NodeSet = HashMap<NodeInfo, bool>;
+
 // Graph summarizes a performance profile into a format that is
 // suitable for visualization.
 #[derive(Clone, Debug)]
-struct Graph {
-    nodes: Node,
+struct Graph<'a> {
+    nodes: Vec<&'a Node>,
+}
+
+impl<'a> Graph<'a>
+// where
+//     T: Fn(&'a [i64]) -> i64,
+//     U: Fn(i64, String) -> String,
+{
+    pub fn new() -> Self {
+        Graph { nodes: vec![] }
+    }
+
+    fn init_graph<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
+        &self,
+        prof: Profile,
+        o: Options<T, U>,
+    ) -> Self {
+        Graph { nodes: vec![] }
+    }
+
+    fn create_nodes<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
+        prof: &Profile,
+        o: Options<T, U>,
+    ) -> Option<(Nodes, HashMap<u64, Nodes>)> {
+        let mut locations: HashMap<u64, Nodes> = HashMap::new();
+
+        let mut nm = NodeMap::new();
+
+        for l in prof.location.iter() {
+            let mut lines = &l.line;
+
+            let mut nodes = vec![Node::default(); lines.len()];
+
+            for (ln, _) in lines.iter().enumerate() {
+                nodes.insert(ln, Node::default()); // TODO nodes[ln] = nm.findOrInsertLine(l, lines[ln], o)
+            }
+
+            locations.insert(l.id, nodes);
+        }
+
+        Some((nm.iter().map(|x| x.1.clone()).collect::<Vec<Node>>(), locations))
+    }
 }
 
 #[derive(Debug)]
