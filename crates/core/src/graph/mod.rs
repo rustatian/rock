@@ -55,10 +55,10 @@ impl<'a> Graph<'a>
     ) -> Option<(Nodes, HashMap<u64, Nodes>)> {
         let mut locations: HashMap<u64, Nodes> = HashMap::new();
 
-        let mut nm = NodeMap::new();
+        let nm = NodeMap::new();
 
         for l in prof.location.iter() {
-            let mut lines = &l.line;
+            let lines = &l.line;
 
             let mut nodes = vec![Node::default(); lines.len()];
 
