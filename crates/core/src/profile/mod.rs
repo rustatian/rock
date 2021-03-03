@@ -5,12 +5,12 @@ use std::borrow::Borrow;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
-pub mod buffer;
+pub(crate) mod buffer;
 mod errors;
-mod function;
+pub(crate) mod function;
 mod label;
-pub mod line;
-mod location;
+pub(crate) mod line;
+pub(crate) mod location;
 mod mapping;
 mod sample;
 mod value_type;

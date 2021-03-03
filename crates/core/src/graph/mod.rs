@@ -1,9 +1,15 @@
 #![warn(missing_debug_implementations)]
-#![allow(dead_code)] //TODO remove later
-use crate::profile::line::Line;
+#![allow(dead_code)]
+
+//TODO remove later
+use crate::profile::line::{self, Line};
 use crate::profile::Profile;
-use std::hash::{Hash, Hasher};
+use crate::profile::{self};
 use std::{collections::HashMap, vec};
+use std::{
+    hash::{Hash, Hasher},
+    path::{Path, PathBuf},
+};
 
 #[cfg(target_os = "windows")]
 const SEPARATOR: &str = "\\";
@@ -55,11 +61,11 @@ impl<'a> Graph<'a> {
         let nm = NodeMap::new();
 
         for l in prof.location.iter() {
-            let lines = &l.line;
+            let lines: &Vec<Line> = &l.line;
 
             let mut nodes: Vec<Node> = vec![Node::default(); lines.len()];
 
-            for (ln, _) in lines.iter().enumerate() {
+            for ln in 0..lines.len() {
                 nodes.insert(ln, Node::default()); // TODO nodes[ln] = nm.findOrInsertLine(l, lines[ln], o)
             }
 
@@ -70,6 +76,44 @@ impl<'a> Graph<'a> {
             nm.iter().map(|x| x.1.clone()).collect::<Vec<Node>>(),
             locations,
         ))
+    }
+
+    fn node_info<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
+        l: &profile::location::Location,
+        line: profile::line::Line,
+        objfile: String,
+        o: &Options<T, U>,
+    ) -> NodeInfo {
+        if line.function == profile::function::Function::default() {
+            return NodeInfo {
+                address: l.address,
+                objfile: objfile,
+                ..Default::default()
+            };
+        }
+
+        let mut ni = NodeInfo {
+            address: l.address,
+            lineno: line.line,
+            name: line.function.name,
+            ..Default::default()
+        };
+
+        if !line.function.filename.is_empty() {
+            let mut buf = PathBuf::from(line.function.filename);
+            buf.clear();
+            ni.file = buf.to_str().unwrap().to_string();
+        }
+        if o.orig_fn_names {
+            ni.orig_name = line.function.system_name;
+        }
+
+        if o.obj_names || (ni.name.is_empty() && ni.orig_name.is_empty()) {
+            ni.objfile = objfile;
+            ni.start_line = line.function.start_line;
+        }
+
+        ni
     }
 }
 
