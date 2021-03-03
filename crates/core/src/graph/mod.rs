@@ -1,14 +1,14 @@
 #![warn(missing_debug_implementations)]
+//TODO remove later
 #![allow(dead_code)]
 
-//TODO remove later
-use crate::profile::line::{self, Line};
+use crate::profile::line::Line;
 use crate::profile::Profile;
 use crate::profile::{self};
 use std::{collections::HashMap, vec};
 use std::{
     hash::{Hash, Hasher},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 #[cfg(target_os = "windows")]
@@ -76,6 +76,29 @@ impl<'a> Graph<'a> {
             nm.iter().map(|x| x.1.clone()).collect::<Vec<Node>>(),
             locations,
         ))
+    }
+
+    fn find_or_insert_node(nm: &mut NodeMap, info: NodeInfo, kept: NodeSet) -> Option<Node> {
+        None
+    }
+
+    fn find_or_insert_line<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
+        nm: &NodeMap,
+        l: &profile::location::Location,
+        line: profile::line::Line,
+        o: &Options<T, U>,
+    ) -> Option<Node> {
+        let mut objfile = String::new();
+
+        if let Some(m) = &l.mapping {
+            if !m.filename.is_empty() {
+                objfile = m.filename.clone();
+            }
+        }
+
+        let mut node_info = Graph::node_info(l, line, objfile, o);
+
+        None
     }
 
     fn node_info<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
