@@ -1,5 +1,6 @@
 #![warn(missing_debug_implementations)]
 #![allow(dead_code)] //TODO remove later
+use crate::profile::line::Line;
 use crate::profile::Profile;
 use std::hash::{Hash, Hasher};
 use std::{collections::HashMap, vec};
@@ -32,11 +33,7 @@ struct Graph<'a> {
     nodes: Vec<&'a Node>,
 }
 
-impl<'a> Graph<'a>
-// where
-//     T: Fn(&'a [i64]) -> i64,
-//     U: Fn(i64, String) -> String,
-{
+impl<'a> Graph<'a> {
     pub fn new() -> Self {
         Graph { nodes: vec![] }
     }
@@ -60,7 +57,7 @@ impl<'a> Graph<'a>
         for l in prof.location.iter() {
             let lines = &l.line;
 
-            let mut nodes = vec![Node::default(); lines.len()];
+            let mut nodes: Vec<Node> = vec![Node::default(); lines.len()];
 
             for (ln, _) in lines.iter().enumerate() {
                 nodes.insert(ln, Node::default()); // TODO nodes[ln] = nm.findOrInsertLine(l, lines[ln], o)
@@ -69,7 +66,10 @@ impl<'a> Graph<'a>
             locations.insert(l.id, nodes);
         }
 
-        Some((nm.iter().map(|x| x.1.clone()).collect::<Vec<Node>>(), locations))
+        Some((
+            nm.iter().map(|x| x.1.clone()).collect::<Vec<Node>>(),
+            locations,
+        ))
     }
 }
 

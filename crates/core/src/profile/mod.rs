@@ -9,7 +9,7 @@ pub mod buffer;
 mod errors;
 mod function;
 mod label;
-mod line;
+pub mod line;
 mod location;
 mod mapping;
 mod sample;

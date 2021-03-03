@@ -1,6 +1,6 @@
 #![warn(missing_debug_implementations, rust_2018_idioms)]
 
-mod graph;
+pub mod graph;
 pub mod profile;
-mod report;
-mod driver;
+pub mod report;
+pub mod driver;
