@@ -110,7 +110,7 @@ impl<'a> Graph<'a> {
         if line.function == profile::function::Function::default() {
             return NodeInfo {
                 address: l.address,
-                objfile: objfile,
+                objfile,
                 ..Default::default()
             };
         }

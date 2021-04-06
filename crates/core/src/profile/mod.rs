@@ -5,7 +5,7 @@ use std::borrow::Borrow;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
-pub(crate) mod buffer;
+pub mod buffer;
 mod errors;
 pub(crate) mod function;
 mod label;
