@@ -7,7 +7,6 @@ pub struct Line {
     pub line: i64,
     // The id of the corresponding profile.Function for this line.
     pub function_index: u64,
-
     // HELPERS
     pub function: function::Function,
 }
