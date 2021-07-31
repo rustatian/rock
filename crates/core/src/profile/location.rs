@@ -32,7 +32,6 @@ pub struct Location {
     // symbols. This field must be recomputed when the symbolization state of the
     // profile changes.
     pub is_folder: bool,
-
     //HELPER
     pub mapping: Option<Mapping>,
 }
