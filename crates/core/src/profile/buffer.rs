@@ -234,9 +234,9 @@ pub fn decode_varint(data: &mut Vec<u8>) -> Result<usize, RockError> {
         // 0011101100000000
         // 0011101101010110 = 15190
         u |= (((data[i] & 0x7F) as u64).shl((7 * i) as u64)) as usize; // shl -> safe shift left operation
-                                                                       // here we check all 8 bits for MSB
-                                                                       // if all bits are zero, we'are done
-                                                                       // if not, MSB is set and there is presents next byte to read
+        // here we check all 8 bits for MSB
+        // if all bits are zero, we'are done
+        // if not, MSB is set and there is presents next byte to read
         if data[i] & 0x80 == 0 {
             // drain first i-th number of elements
             data.drain(..=i);
@@ -311,7 +311,7 @@ mod profile_test {
                     let r = super::Buffer::decode(&mut buffer);
                     match r {
                         Ok(b) => {
-                            assert_eq!(b.to_string().trim_end().eq(&golden_file), true);
+                            assert!(b.to_string().trim_end().eq(&golden_file));
                         }
                         Err(err) => {
                             panic!("{}", err);
