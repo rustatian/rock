@@ -232,7 +232,7 @@ impl Profile {
                         match res {
                             Ok(varint) => self.comment_index.push(varint as i64),
                             Err(err) => {
-                                panic!(err);
+                                panic!("{}", err);
                             }
                         }
                     } else {

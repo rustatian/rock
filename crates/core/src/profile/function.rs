@@ -61,7 +61,7 @@ impl Decoder<Function> for Function {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

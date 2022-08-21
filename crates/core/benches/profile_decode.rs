@@ -14,7 +14,7 @@ pub fn profile_bench_cpu(c: &mut Criterion) {
                 b.iter(|| profile::buffer::Buffer::decode(black_box(buffer.as_mut())))
             });
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 
@@ -28,7 +28,7 @@ pub fn profile_bench_heap(c: &mut Criterion) {
                 b.iter(|| profile::buffer::Buffer::decode(black_box(buffer.as_mut())))
             });
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 
@@ -42,7 +42,7 @@ pub fn profile_bench_encoded(c: &mut Criterion) {
                 b.iter(|| profile::buffer::Buffer::decode(black_box(buffer.as_mut())))
             });
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 
@@ -56,7 +56,7 @@ pub fn profile_bench_big_1min_13025_lines(c: &mut Criterion) {
                 b.iter(|| profile::buffer::Buffer::decode(black_box(buffer.as_mut())))
             });
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 

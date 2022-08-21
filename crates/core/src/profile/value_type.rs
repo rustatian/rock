@@ -38,7 +38,7 @@ impl Decoder<ValueType> for ValueType {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

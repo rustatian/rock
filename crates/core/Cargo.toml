@@ -4,14 +4,14 @@ version = "0.1.0"
 authors = ["Valery Piashchynski <piashchynski_valery@hotmail.com>"]
 repository = "https://github.com/48d90782/rock.git"
 license = "MIT/Apache-2.0"
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["rlib"]
 
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = { version = "0", features = ["html_reports"] }
 
 [[bench]]
 name = "profile_decode"
@@ -19,8 +19,8 @@ path = "benches/profile_decode.rs"
 harness = false
 
 [dependencies]
-chrono = "0.4.19"
-clap = "2"
+chrono = "0"
+clap = "3"
 flate2 = "1"
 
 [profile.dev]

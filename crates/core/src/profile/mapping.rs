@@ -102,7 +102,7 @@ impl Decoder<Mapping> for Mapping {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

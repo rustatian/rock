@@ -26,10 +26,10 @@ pub enum WireTypes {
 impl From<usize> for WireTypes {
     fn from(var: usize) -> Self {
         match var {
-            0 => self::WireTypes::WireVarint,
-            1 => self::WireTypes::WireFixed64,
-            2 => self::WireTypes::WireBytes,
-            5 => self::WireTypes::WireFixed32,
+            0 => WireTypes::WireVarint,
+            1 => WireTypes::WireFixed64,
+            2 => WireTypes::WireBytes,
+            5 => WireTypes::WireFixed32,
             _ => panic!("unknown WireType"),
         }
     }
@@ -74,7 +74,7 @@ impl Decoder for Buffer {
                     p.post_decode();
                     match p.validate() {
                         Ok(_) => Ok(p),
-                        Err(err) => panic!(err),
+                        Err(err) => panic!("{}", err),
                     }
                 }
                 Err(err) => Err(RockError::ProfileUncompressFailed {
@@ -96,7 +96,7 @@ impl Decoder for Buffer {
         p.post_decode();
         match p.validate() {
             Ok(_) => Ok(p),
-            Err(err) => panic!(err),
+            Err(err) => panic!("{}", err),
         }
     }
 }
@@ -118,7 +118,7 @@ pub fn decode_message(buf: &mut Buffer, data: &mut Vec<u8>, profile: &mut Profil
                 Profile::decode_profile_field(profile, buf, buf_data);
             }
             Err(err) => {
-                panic!(err);
+                panic!("{}", err);
             }
         }
     }
@@ -198,7 +198,7 @@ pub fn decode_field(buf: &mut Buffer, data: &mut Vec<u8>) -> Result<Vec<u8>, Roc
             }
         }
         Err(err) => {
-            panic!(err);
+            panic!("{}", err);
         }
     }
 }
@@ -314,11 +314,11 @@ mod profile_test {
                             assert_eq!(b.to_string().trim_end().eq(&golden_file), true);
                         }
                         Err(err) => {
-                            panic!(err);
+                            panic!("{}", err);
                         }
                     }
                 }
-                Err(err) => panic!(err),
+                Err(err) => panic!("{}", err),
             }
         }
     }

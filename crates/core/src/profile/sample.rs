@@ -47,7 +47,7 @@ impl Decoder<Sample> for Sample {
                                     match decode_varint(buf_data) {
                                         Ok(varint) => s.location_index.push(varint as u64),
                                         Err(err) => {
-                                            panic!(err);
+                                            panic!("{}", err);
                                         }
                                     }
                                 }
@@ -68,7 +68,7 @@ impl Decoder<Sample> for Sample {
                                     match decode_varint(buf_data) {
                                         Ok(varint) => s.value.push(varint as i64),
                                         Err(err) => {
-                                            panic!(err);
+                                            panic!("{}", err);
                                         }
                                     }
                                 }
@@ -91,7 +91,7 @@ impl Decoder<Sample> for Sample {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

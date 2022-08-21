@@ -49,7 +49,7 @@ impl Decoder<Label> for Label {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

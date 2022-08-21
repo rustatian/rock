@@ -32,7 +32,7 @@ impl Decoder<Line> for Line {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }

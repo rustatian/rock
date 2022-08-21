@@ -73,7 +73,7 @@ impl Decoder<Location> for Location {
                     }
                 }
                 Err(err) => {
-                    panic!(err);
+                    panic!("{}", err);
                 }
             }
         }
