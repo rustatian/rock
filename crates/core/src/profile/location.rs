@@ -118,11 +118,7 @@ impl ToString for Location {
                 );
 
                 if func.name != func.system_name {
-                    let _ = write!(
-                        ln_str,
-                        "({})",
-                        func.system_name,
-                    );
+                    let _ = write!(ln_str, "({})", func.system_name,);
                 }
             }
             // HERE ^^

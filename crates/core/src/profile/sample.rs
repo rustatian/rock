@@ -143,8 +143,10 @@ impl ToString for Sample {
                     None => {
                         let _ = write!(
                             label_string,
-                            "{}:[{}]", k,
-                            v.iter().map(|v| { v.to_string() }).collect::<String>());
+                            "{}:[{}]",
+                            k,
+                            v.iter().map(|v| { v.to_string() }).collect::<String>()
+                        );
                     }
                     Some(units) => {
                         if units.len() == v.len() {

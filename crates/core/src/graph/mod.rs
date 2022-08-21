@@ -44,9 +44,7 @@ impl<'a> Graph<'a> {
         Graph { nodes: vec![] }
     }
 
-    fn init_graph<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
-        &self,
-    ) -> Self {
+    fn init_graph<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(&self) -> Self {
         Graph { nodes: vec![] }
     }
 
@@ -138,9 +136,9 @@ impl<'a> Graph<'a> {
 
 #[derive(Debug)]
 struct Options<T, U>
-    where
-        T: Fn(&[i64]) -> i64,
-        U: Fn(i64, String) -> String,
+where
+    T: Fn(&[i64]) -> i64,
+    U: Fn(i64, String) -> String,
 {
     sample_value: T,
     sample_mean_divisor: T,
