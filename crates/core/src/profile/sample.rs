@@ -1,6 +1,7 @@
 use crate::profile::buffer::{decode_field, decode_varint, Buffer, WireTypes};
 use crate::profile::{label, location, Decoder};
 use std::collections::HashMap;
+use std::fmt::Write as _;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Each Sample records values encountered in some program
@@ -140,11 +141,10 @@ impl ToString for Sample {
 
                 match units {
                     None => {
-                        label_string.push_str(&format!(
-                            "{}:[{}]",
-                            k,
-                            v.iter().map(|v| { v.to_string() }).collect::<String>()
-                        ));
+                        let _ = write!(
+                            label_string,
+                            "{}:[{}]", k,
+                            v.iter().map(|v| { v.to_string() }).collect::<String>());
                     }
                     Some(units) => {
                         if units.len() == v.len() {
@@ -157,20 +157,22 @@ impl ToString for Sample {
                                 values[i] = format!("{} {}", vv, units[i]);
                             }
 
-                            label_string.push_str(&format!(
+                            let _ = write!(
+                                label_string,
                                 "{}:[{}]",
                                 k,
                                 values
                                     .iter()
                                     .map(|v| { format!("{} ", v) })
                                     .collect::<String>()
-                            ));
+                            );
                         } else {
-                            label_string.push_str(&format!(
+                            let _ = write!(
+                                label_string,
                                 "{}:[{}]",
                                 k,
                                 v.iter().map(ToString::to_string).collect::<String>()
-                            ));
+                            );
                         }
                     }
                 }

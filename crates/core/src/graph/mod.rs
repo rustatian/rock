@@ -46,15 +46,12 @@ impl<'a> Graph<'a> {
 
     fn init_graph<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
         &self,
-        prof: Profile,
-        o: Options<T, U>,
     ) -> Self {
         Graph { nodes: vec![] }
     }
 
     fn create_nodes<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
         prof: &Profile,
-        o: Options<T, U>,
     ) -> Option<(Nodes, HashMap<u64, Nodes>)> {
         let mut locations: HashMap<u64, Nodes> = HashMap::new();
 
@@ -78,14 +75,13 @@ impl<'a> Graph<'a> {
         ))
     }
 
-    fn find_or_insert_node(nm: &mut NodeMap, info: NodeInfo, kept: NodeSet) -> Option<Node> {
+    fn find_or_insert_node(_: &mut NodeMap, _: NodeInfo, _: NodeSet) -> Option<Node> {
         None
     }
 
     fn find_or_insert_line<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
-        nm: &NodeMap,
         l: &profile::location::Location,
-        line: profile::line::Line,
+        line: Line,
         o: &Options<T, U>,
     ) -> Option<Node> {
         let mut objfile = String::new();
@@ -96,14 +92,14 @@ impl<'a> Graph<'a> {
             }
         }
 
-        let mut node_info = Graph::node_info(l, line, objfile, o);
+        let _ = Graph::node_info(l, line, objfile, o);
 
         None
     }
 
     fn node_info<T: Fn(&[i64]) -> i64, U: Fn(i64, String) -> String>(
         l: &profile::location::Location,
-        line: profile::line::Line,
+        line: Line,
         objfile: String,
         o: &Options<T, U>,
     ) -> NodeInfo {
@@ -142,9 +138,9 @@ impl<'a> Graph<'a> {
 
 #[derive(Debug)]
 struct Options<T, U>
-where
-    T: Fn(&[i64]) -> i64,
-    U: Fn(i64, String) -> String,
+    where
+        T: Fn(&[i64]) -> i64,
+        U: Fn(i64, String) -> String,
 {
     sample_value: T,
     sample_mean_divisor: T,

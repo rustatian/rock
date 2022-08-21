@@ -1,6 +1,7 @@
 use crate::profile::buffer::{decode_field, Buffer};
 use crate::profile::mapping::Mapping;
 use crate::profile::{function, line, Decoder};
+use std::fmt::Write as _;
 
 #[derive(Default, Debug, Clone, Eq, PartialEq)]
 // Describes function and line table debug information.
@@ -109,13 +110,19 @@ impl ToString for Location {
             // TODO better to use option
             if func != function::Function::default() {
                 ln_str.clear();
-                ln_str.push_str(&format!(
+
+                let _ = write!(
+                    ln_str,
                     "{} {}:{} s={}",
                     func.name, func.filename, self.line[li].line, func.start_line
-                ));
+                );
 
                 if func.name != func.system_name {
-                    ln_str.push_str(&format!("({})", func.system_name));
+                    let _ = write!(
+                        ln_str,
+                        "({})",
+                        func.system_name,
+                    );
                 }
             }
             // HERE ^^

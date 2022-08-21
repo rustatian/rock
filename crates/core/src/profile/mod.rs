@@ -160,7 +160,7 @@ impl ToString for Profile {
             ss.push(m.to_string())
         }
 
-        return format!("{}{}", ss.join("\n"), "\n");
+        format!("{}{}", ss.join("\n"), "\n")
     }
 }
 
